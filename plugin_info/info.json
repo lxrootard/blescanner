@@ -1,0 +1,19 @@
+{
+	"id" : "blescanner",
+	"name" : "MQTT BLE Scanner",
+	"description" : {
+		"fr_FR": "Plugin permettant de scanner les devices Bluetooth et de superviser les antennes BLE via MQTT",
+		"en_US": "Plugin to scan Bluetooth devices and monitor BLE antennas using MQTT"
+	},
+	"licence" : "AGPL",
+	"author" : "lxrootard",
+	"require" : "4.4.0",
+	"category" : "monitoring",
+	"hasDependency" : true,
+	"hasOwnDeamon" : true,
+	"maxDependancyInstallTime" : 15,
+	"language": [ "fr_FR", "en_US" ],
+	"compatibility": [ "diy","rpi","v4" ],
+	"changelog" : "https:\/\/github.com\/lxrootard\/blescanner#changelog",
+	"documentation" : "https:\/\/github.com\/lxrootard\/blescanner"
+}

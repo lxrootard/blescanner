@@ -1,0 +1,18 @@
+{
+  "pre-install": {
+  },
+  "apt": {
+    "mosquitto-clients" : {}
+  },
+  "pip3": {
+  },
+  "npm": {
+  },
+  "yarn": {
+  },
+  "plugin": {
+    "mqtt2" : {}
+  },
+  "post-install": {
+  }
+}
