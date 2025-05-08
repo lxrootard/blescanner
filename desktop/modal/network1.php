@@ -18,14 +18,10 @@
 if (!isConnect('admin')) {
 	throw new Exception('401 - {{Accès non autorisé}}');
 }
-$antennas = eqLogic::byType('blescanner');
-$devices = array();
-if (config::byKey('use_mqttdiscovery','blescanner'))
-        $devices = eqLogic::byType('MQTTDiscovery');
-if (config::byKey('use_jmqtt','blescanner'))
-        $devices = array_merge($devices, eqLogic::byType('jMQTT'));
+$antennas = blescanner::getDevices('Antenna');
+$devices = blescanner::getDevices('Device');
 $away = config::byKey('display_away','blescanner');
-$aNodes= blescanner::getAntennaList();
+$aNodes = blescanner::getAntennaList();
 $dNodes = array();
 
 $knownDevices = cache::byKey('blescanner::known_devices')->getValue();
@@ -35,41 +31,31 @@ $away = cache::byKey('blescanner::display_away')->getValue();
 foreach ($devices as $dev) {
 	if (! $dev->getIsEnable())
 		continue;
-	if ($dev->getEqType_name() == 'jMQTT') {
-		if (blescanner::getJmqttType($dev) != 'eqpt')
-			continue;
-		$uid = blescanner::getJmqttUid($dev);
-        } else {
-                $uid = $dev->getLogicalId();
-        }
-	$name = $dev->getName();
-        //log::add('blescanner', 'debug', 'device: ' . $name);
-	$dNodes[$uid]['name'] = $name;
+        $uid = $dev->getLogicalId();
+	$rssi = $dev->getCmdValue($uid . '-rssi');
+	$rssi = isset($rssi)? $rssi: -200;
+	if (($away != 'on') && ($rssi == -200))
+		continue;
+
+	$dNodes[$uid]['rssi'] = $rssi;
+	$dNodes[$uid]['name'] = $dev->getName();
 	$dNodes[$uid]['picture']= $dev->getImage();
-	$dNodes[$uid]['rssi'] = -200;
+
 	foreach ($antennas as $a) {
 	    if ($dev->getIsEnable()) {
 //		$aName = $a->getName();
-		$aUid= $a->getLogicalId();
-		$distId = 'distance ' . $aUid;
-		$dist = $knownDevices[$uid][$distId];
-                if (is_null($dist))
-                        $dist = -1;
-                $dNodes[$uid][$distId] = $dist;
+		$aUid= $a->getUid();
+		$aLid = $a->getLogicalId();
+		$distId = 'distance ' . $aLid;
+		$dist = $dev->getCmdValue($uid . '-distance-' . $aUid);
+                $dNodes[$uid][$distId] =  isset($dist)? $dist: -1;
 
-		$rssiId = 'rssi ' . $aUid;
-		$rssi = $knownDevices[$uid][$rssiId];
-		if ((is_null($rssi)) || (! $aNodes[$aUid]['online']))
-			$rssi = -200; // MQTTDiscovery ne fait pas la maj dans ce cas
-
-		// log::add('blescanner', 'debug', 'graph() rssi ' . $aName . ': ' . $rssi);
-		$dNodes[$uid][$rssiId] = $rssi;
-		$dNodes[$uid]['rssi'] = max ($dNodes[$uid]['rssi'], $rssi);
+		$rssiId = 'rssi ' . $aLid;
+		$rssi = $dev->getCmdValue($uid . '-rssi-' . $aUid);
+		$dNodes[$uid][$rssiId] = isset($rssi)? $rssi: -200;
 	   }
 	}
 	// log::add('blescanner', 'debug', 'rssi:' .  $dNodes[$uid]['rssi']);
-	if (($away != 'on') && ($dNodes[$uid]['rssi'] == -200))
-		 unset ($dNodes[$uid]);
 }
 $mode = cache::byKey('blescanner::display_mode')->getValue();
 sendVarToJS('antennas', $aNodes);

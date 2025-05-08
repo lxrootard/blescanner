@@ -17,7 +17,6 @@
 
 require_once dirname(__FILE__) . '/../../../core/php/core.inc.php';
 include_file('core', 'authentification', 'php');
-//include_file('desktop', 'config', 'js', 'blescanner');
 
 if (!isConnect()) {
   include_file('desktop', '404', 'php');
@@ -26,35 +25,26 @@ if (!isConnect()) {
 ?>
 
 <style>
-  .tags-input {
-    /* display: inline-block; */
-    position: relative;
-    /* border-radius: 4px; */
+  .input-group {
+   width: 65%;
   }
-
-  .tags-input ul {
+  .root-topics ul {
     list-style: none;
     padding: 0;
-    /* margin: 0; */
   }
-
-  .tags-input li {
+  .root-topics li {
     display: inline-block;
-    background-color: var(--al-info-color) !important;
-    color: var(--linkHoverLight-color) !important;
-    border: 1px solid #ccc;
-    border-radius: var(--border-radius) !important;
+    background-color:  var(--al-info-color);
+    color: white;
+    border: 1px solid lightgrey;
     padding: 0px 4px 0px 4px;
     margin-right: 5px;
     margin-top: 5px;
   }
-
-  .tags-input .delete-tag-button,
-  .add-tag-button {
+  .bt_remove_topic {
     background-color: transparent;
     border: none;
-    color: var(--linkHoverLight-color) !important;
-    cursor: pointer;
+    color: white;
     margin-left: 5px;
   }
 </style>
@@ -62,66 +52,59 @@ if (!isConnect()) {
 <form class="form-horizontal">
   <fieldset>
      <div class="form-group">
-	<label class="col-xs-2 control-label">{{Utiliser MQTTDiscovery}}
-		<sup><i class="fas fa-question-circle tooltips" title="{{Utiliser les informations du plugin MQTTDiscovery}}"></i></sup>
-	</label>
-	<div class="col-md-1">
-		<input type="checkbox" class="configKey form-control" data-l1key="use_mqttdiscovery" checked>
-	</div>
-     </div>
-     <div class="form-group">
-        <label class="col-xs-2 control-label">{{Utiliser jMQTT}}
-                <sup><i class="fas fa-question-circle tooltips" title="{{Utiliser les informations du plugin jMQTT}}"></i></sup>
+        <label class="col-xs-2 control-label">{{Création automatique}}
+                <sup><i class="fas fa-question-circle tooltips" title="{{Créer automatiquement les devices auto-découverts}}"></i></sup>
         </label>
         <div class="col-md-1">
-                <input type="checkbox" class="configKey form-control" data-l1key="use_jmqtt" unchecked>
+                <input type="checkbox" class="configKey form-control" data-l1key="auto_create" unchecked>
         </div>
      </div>
      <div class="form-group">
         <label class="col-xs-2 control-label">{{Durée d'auto-découverte}}
-                <sup><i class="fas fa-question-circle tooltips" title="{{Durée de l'auto-découverte (en minutes)}}"></i></sup>
+	    <sup><i class="fas fa-question-circle tooltips" title="{{Durée de l'auto-découverte (en minutes)}}"></i></sup>
         </label>
-            <div class="col-xs-1">
-                <input class="configKey form-control" data-l1key="disco_timeout"/>
-            </div>
-	    <span>{{mins}}</span>
+	<div class="col-xs-1">
+	    <input class="configKey form-control" data-l1key="disco_duration"/>
+	</div>
+	<span>{{mins}}</span>
      </div>
      <div class="form-group">
 	<label class="col-xs-2 control-label">{{Délai d'absence}}
-		<sup><i class="fas fa-question-circle tooltips"
-		title="{{Délai pour considérer les devices comme absents (en minutes). 0 pour les garder sans limite}}"></i></sup>
+	    <sup><i class="fas fa-question-circle tooltips"
+	    title="{{Délai pour considérer les devices comme absents (en minutes). 0 pour les garder sans limite}}"></i></sup>
 	</label>
-            <div class="col-xs-1">
-                <input class="configKey form-control" data-l1key="devices_timeout"/>
-            </div>
-	    <span>{{mins}}</span>
+        <div class="col-xs-1">
+            <input class="configKey form-control" data-l1key="devices_timeout"/>
+        </div>
+	<span>{{mins}}</span>
      </div>
      <div class="form-group">
         <label class="col-xs-2 control-label">{{Topic de découverte}}
-                <sup><i class="fas fa-question-circle tooltips"
-                title="{{Topic d'auto-découverte. Défaut: homeassistant}}"></i></sup>
-        </label>
-            <div class="col-xs-2">
-                <input class="configKey form-control" data-l1key="disco_topic"/>
-            </div>
-      </div>
-      <div class="form-group">
-        <label class="col-xs-2 control-label">{{Topics racines des équipements}}
-          <sup><i class="fas fa-question-circle tooltips" title="{{Topics racines des antennes BLE à monitorer}}"></i></sup>
+            <sup><i class="fas fa-question-circle tooltips"
+            title="{{Topic d'auto-découverte. Défaut: homeassistant}}"></i></sup>
         </label>
         <div class="col-xs-2">
-          <input class="configKey form-control" id="ble_root_topics" data-l1key="ble_root_topics" type="hidden" readonly="true" />
-          <div class="tags-input">
-            <ul id="data-topic-tags"></ul>
+            <input class="configKey form-control" data-l1key="disco_topic"/>
+        </div>
+     </div>
+     <div class="form-group">
+	<label class="col-xs-2 control-label">{{Topics racines des équipements}}
+	    <sup><i class="fas fa-question-circle tooltips" title="{{Topics racines des antennes BLE à monitorer}}"></i></sup>
+        </label>
+        <div class="col-xs-3">
+          <input class="configKey form-control" data-l1key="ble_root_topics" type="hidden"/>
+          <div class="root-topics">
             <div class="input-group">
-              <input class="form-control roundedLeft" id="topic-input-tag" placeholder="{{Ajouter un topic + <Enter>}}" />
+              <input class="form-control roundedLeft" id="new-topic" placeholder="{{Ajouter un topic}}"/>
               <span class="input-group-btn">
-                <a class="btn btn-default form-control roundedRight" id="bt_add" title="{{Ajouter}}"><i class="fas fa-plus-square"></i></a>
+                <a class="btn btn-default form-control roundedRight" id="bt_add_topic" title="{{Ajouter}}"><i class="fas fa-plus-square"></i></a>
               </span>
             </div>
+	    <p>
+	    <ul id="topics-list"></ul>
           </div>
         </div>
-      </div>
+     </div>
   </fieldset>
 </form>
 

@@ -21,10 +21,8 @@ if (!isConnect('admin')) {
 ?>
 <style type="text/css">
 	.display-mode {
-//		position: fixed;
 		margin-left: 0px;
 		margin-top: 0px;
-//		border: 1px solid red;
 	}
 	.options-select {
 		width: 300px;
@@ -37,7 +35,7 @@ if (!isConnect('admin')) {
 	<div class="display-mode">
 	    <fieldset id="mode_options">
 		<span>
-                        <label style="width:130px;">{{Mode d'affichage contextuel}}
+                        <label class="graphLabel">{{Mode d'affichage contextuel}}
                 		<sup><i class="fas fa-question-circle tooltips"
                         		title="{{Atténuation (en dB) ou distance (en mètres)}}"></i></sup>
 			</label>
@@ -67,11 +65,10 @@ if (!isConnect('admin')) {
 	<th>
 		<div class="refresh-modal" style="float: right">
         		<label>{{Rafraîchir}}</label>
-        		<a class="btn btn-success refreshGraph graphBtn" data-action="refresh">
+        		<a class="btn btn-success refreshBtn graphBtn" data-action="refresh">
 				<i class="fas fa-sync" style="width:15px!important"></i>
 			</a>
 		</div>
 	</th>
   </tr>
 </table>
-

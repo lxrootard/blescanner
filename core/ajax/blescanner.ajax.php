@@ -25,19 +25,18 @@ try {
 
   /* Fonction permettant l'envoi de l'entête 'Content-Type: application/json'
     En V3 : indiquer l'argument 'true' pour contrôler le token d'accès Jeedom
-    En V4 : autoriser l'exécution d'une méthode 'action' en GET en indiquant le(s) nom(s) de(s) action(s$
+    En V4 : autoriser l'exécution d'une méthode 'action' en GET en indiquant le(s) nom(s) de(s) action(s) dans un tableau en argument
   */
-    ajax::init();
+    ajax::init(array('uploadPicture'));
 
     if (init('action') == 'disco') {
 	$deamon_info = blescanner::deamon_info();
         if ($deamon_info['state'] != 'ok') {
 		event::add('jeedom::alert', array('level' => 'warning', 'page' => 'blescanner',
 			'message' => __("Le deamon n'est pas démarré", __FILE__)));
-		// ajax::error("Le deamon n'est pas démarré");
+	// ajax::error("Le deamon n'est pas démarré");
 	} else {
 		$disco = cache::byKey('blescanner::disco')->getValue();
-        	//log::add('blescanner', 'debug', ' ajax: disco=' . $disco);
 		$command = $disco ? 'start' : 'stop';
 		// log::add('blescanner', 'debug', $command . ' discovery');
 		if ($disco)
@@ -60,6 +59,27 @@ try {
         ajax::success();
     }
 
+    if (init('action') == 'uploadPicture') {
+	$file = $_FILES['file'];
+        log::add('blescanner', 'debug', 'ajax: uploadPicture for: '. init('pictureId') . ' icon: ' . $file['name']);
+	blescanner::uploadPicture ($file,init('pictureId'));
+        ajax::success();
+    }
+
+   if (init('action') == 'getPicture') {
+	$pictureId = init('pictureId');
+        //log::add('blescanner', 'debug', 'ajax: getPicture for: '. $model);
+        $i = blescanner::getPicture($pictureId);
+        ajax::success($i);
+    }
+
+
+    if (init('action') == 'resetPicture') {
+	// log::add('blescanner', 'debug', 'ajax: resetPicture for: '. init('pictureId'));
+	blescanner::resetPicture (init('pictureId'));
+        ajax::success();
+    }
+
     if (init('action') == 'addDevice') {
 	$key = init('id');
         // log::add('blescanner', 'debug', 'ajax: addDevice id: '. $key);
@@ -67,7 +87,7 @@ try {
 	$unknownDevices = cache::byKey('blescanner::unknown_devices')->getValue();
 	unset ($unknownDevices[$key]);
         cache::set('blescanner::unknown_devices',$unknownDevices);
-
+	// event::add('blescanner::newEqLogic', '');
         ajax::success();
     }
 
@@ -76,3 +96,4 @@ try {
 catch (Exception $e) {
     ajax::error('blescanner.ajax.php: ' . displayException($e), $e->getCode());
 }
+?>

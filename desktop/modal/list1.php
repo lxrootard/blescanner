@@ -19,15 +19,9 @@ if (!isConnect('admin')) {
 	throw new Exception('401 - Accès non autorisé');
 }
 $plugin = plugin::byId('blescanner');
-$devices = array();
-if (config::byKey('use_mqttdiscovery','blescanner'))
-	$devices = eqLogic::byType('MQTTDiscovery');
-if (config::byKey('use_jmqtt','blescanner'))
-	$devices = array_merge($devices, eqLogic::byType('jMQTT'));
-$antennas = eqLogic::byType('blescanner');
-$knownDevices = cache::byKey('blescanner::known_devices')->getValue();
+$devices = blescanner::getDevices('Device');
+$antennas = blescanner::getDevices('Antenna');
 $away = cache::byKey('blescanner::display_away')->getValue();
-// log::add('blescanner', 'debug',  'known devices: ' . json_encode($knownDevices));
 ?>
 <style type="text/css">
         html, body, svg {
@@ -41,34 +35,36 @@ $away = cache::byKey('blescanner::display_away')->getValue();
                 margin-left: 0px;
                 margin-top: 20px;
         }
+	.table-responsive {
+                width: 100%;
+        }
 	.refresh-modal {
 		float: right;
 	}
 </style>
 <div class="refresh-modal">
 	<label>{{Rafraîchir }}&nbsp;</label>
-	<a class="btn btn-success refreshGraph" data-action="refresh"><i class="fas fa-sync"></i></a>
+	<a class="btn btn-success refreshBtn" data-action="refresh"><i class="fas fa-sync"></i></a>
 </div>
 
 <?php
 include_file('desktop', 'banner3', 'php', 'blescanner');
 ?>
-
-
-<table class="table table-condensed tablesorter" id="table_listblescanner">
+<div class="table-responsive">
+   <table class="table table-condensed tablesorter" id="table_list1">
 	<thead>
 		<tr>
 			<th>{{Image}}</th>
 			<th>{{Equipement}}</th>
-			<th>{{ID}}</th>
-                        <th>{{N° de série}}</th>
-			<th>{{Marque}}</th>
-			<th>{{Type/Modèle}}</th>
-			<th>{{Présent}}</th>
-			<th>{{Batterie}}</th>
-			<th>{{RSSI}}</th>
-			<th>{{Distance}}</th>
-			<th>{{Dernière communication}}</th>
+			<th data-sortable="true" data-sorter="inputs">{{ID}}</th>
+                        <th data-sorter="select-text">{{N° de série}}</th>
+			<th data-sorter="select-text">{{Marque}}</th>
+			<th data-sorter="select-text">{{Type/Modèle}}</th>
+			<th data-sorter="select-text">{{Présent}}</th>
+			<th data-sorter="false">{{Batterie}}</th>
+			<th data-sorter="false">{{RSSI}}</th>
+			<th data-sorter="false">{{Distance}}</th>
+			<th data-sorter="false">{{Dernière communication}}</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -76,18 +72,8 @@ include_file('desktop', 'banner3', 'php', 'blescanner');
 foreach ($devices as $dev) {
 	if (! $dev->getIsEnable())
 		continue;
-	if ($dev->getEqType_name() == 'jMQTT') {
-		if (blescanner::getJmqttType($dev) != 'eqpt')
-			continue;
-		$uid = blescanner::getJmqttUid($dev);
-		//$img = '<i class="fas ' . blescanner::getJmqttIcon($dev) . '"></i>';
-	 	// log::add('blescanner', 'debug',  'img: ' . $img);
-	} else {
-		$uid = $dev->getLogicalId();
-	}
-	$d = $knownDevices[$uid];
-	// $d = blescanner::getCmdValue ($dev,'present'); ko pour jMQTT
-	if (($away != 'on') && ((!isset($d)) || (!$d['present'])))
+	$uid = $dev->getLogicalId();
+	if (($away != 'on') && ((! $dev->getIsEnable()) || (! $dev->isAlive())))
 		continue;
 	$img = '<img src=' . $dev->getImage() . ' style="height:35px; width:35px; ' . $opacity . '" class="' . $opacity . '"/>';
  	$opacity = ($dev->getIsEnable()) ? '' : 'disableCard';
@@ -98,29 +84,27 @@ foreach ($devices as $dev) {
         echo '<td><span class="label label-info" style="font-size : 1em; cursor : default;">' . $dev->getConfiguration('manufacturer') . '</span></td>';
         echo '<td><span class="label label-info" style="font-size : 1em; cursor : default;">' . $dev->getConfiguration('model') . '</span></td>';
 	$status = '<span class="label label-danger" style="font-size : 1em;cursor:default;">{{NOK}}</span>';
-        if ((isset($d)) && ($d['present']))
+        if ($dev->getIsEnable() && $dev->isAlive())
 		$status = '<span class="label label-success" style="font-size : 1em;cursor:default;">{{OK}}</span>';
 	echo '<td>' . $status . '</td>';
-	$bat =  blescanner::getCmdValue($dev,$uid.'-batt'); // a remplacer par generic
-	if ($bat < 20 && $bat != '')
-                $battery_status = '<span class="label label-danger" style="font-size : 1em;">' . $bat . '%</span>';
-        elseif ($bat < 60 && $bat != '')
-                $battery_status = '<span class="label label-warning" style="font-size : 1em;">' . $bat . '%</span>';
-        elseif ($bat > 60 && $bat != '')
-                $battery_status = '<span class="label label-success" style="font-size : 1em;">' . $bat . '%</span>';
-        else
-                $battery_status = '<span class="label label-primary"></span>';
-        echo '<td>' . $battery_status . '</td>';
 
+	$bat =  $dev->getCmdValue($uid.'-batt');
+	if (isset($bat) && $bat != '') {
+		if ($bat < 20)
+                	$battery_status = '<span class="label label-danger" style="font-size : 1em;">' . $bat . '%</span>';
+        	elseif ($bat < 60)
+                	$battery_status = '<span class="label label-warning" style="font-size : 1em;">' . $bat . '%</span>';
+        	elseif ($bat > 60)
+                	$battery_status = '<span class="label label-success" style="font-size : 1em;">' . $bat . '%</span>';
+	} else
+                $battery_status = '<span class="label label-primary"></span>';
+	echo '<td>' . $battery_status . '</td>';
 	echo '<td>';
-        foreach ($antennas as $a) {
-	    if ($a->getIsEnable()) { // && $a->isAlive()) {
-		$aUid= $a->getLogicalId();
+	if ($dev->isAlive()) {
+          foreach ($antennas as $a) {
+	    if ($a->getIsEnable() && $a->isAlive()) {
 		$aName = $a->getName();
-		$rssiId = 'rssi ' . $aUid;
-		$rssi = $d[$rssiId];
-                // $rssi = blescanner::getCmdValue ($dev, $uid. '-rssi-' . $aUid);
-                // log::add('blescanner', 'debug',  $aUid . ' / ' . $dev->getName() . ' rssi= ' . $rssi);
+		$rssi = $dev->getCmdValue($uid . '-rssi-' . $a->getUid());
 		$signal = 'success';
                 if ($rssi <= -150)
                 	$signal = 'none';
@@ -131,23 +115,24 @@ foreach ($devices as $dev) {
                 if ($signal != 'none' && $rssi != '')
                         echo '<span class="label label-' . $signal . '" style="font-size : 0.9em;cursor:default;padding:0px 5px;">' . $rssi .'dBm (' . $aName .')</span><br>';
             }
+	  }
 	}
 	echo '</td>';
 
 	echo '<td>';
-	$knownDevices = cache::byKey('blescanner::known_devices')->getValue();
-	foreach ($antennas as $a) {
-	   if ($a->getIsEnable() && $a->isAlive()) {
+	if ($dev->isAlive()) {
+	  foreach ($antennas as $a) {
+	    if ($a->getIsEnable() && $a->isAlive()) {
 		$aUid= $a->getLogicalId();
                 $aName = $a->getName();
-		$distId = 'distance '. $aUid;
 		if ($a->getIsEnable()) {
-			$dist = $d[$distId];
+			$dist = $dev->getCmdValue($uid . '-distance-'. $a->getUid());
 			if (isset($dist) && ($dist!= -1))
 				echo '<span class="label label-info" style="font-size : 0.9em;cursor:default;padding:0px 5px;">'
 				. $dist . 'm (' . $aName .')</span><br>';
 		}
-	   }
+	    }
+	  }
 	}
 	echo '</td>';
 
@@ -156,7 +141,8 @@ foreach ($devices as $dev) {
 }
 ?>
 	</tbody>
-</table>
+   </table>
+</div>
 
 <script>
 function reloadModal() {
@@ -165,6 +151,10 @@ function reloadModal() {
 //  $('#md_modal').dialog({title: "{{Liste devices BLE connus}}"});
   $('#md_modal').load('index.php?v=d&plugin=blescanner&modal=list1').dialog('open');
 }
+$(function() {
+  $("#table_list1").tablesorter();
+});
+
 </script>
 
 

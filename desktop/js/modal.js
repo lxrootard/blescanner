@@ -2,16 +2,16 @@ jeedom.blescanner = function() {
 }
 
 jeedom.blescanner.setMode = function(_params) {
-  var paramsRequired = ['mode']
-  var paramsSpecifics = {}
+  const paramsRequired = ['mode']
+  const paramsSpecifics = {}
   try {
 	jeedom.private.checkParamsRequired(_params || {}, paramsRequired)
   } catch (e) {
 	(_params.error || paramsSpecifics.error || jeedom.private.default_params.error)(e)
 	return
   }
-  var params = $.extend({}, jeedom.private.default_params, paramsSpecifics, _params || {})
-  var paramsAJAX = jeedom.private.getParamsAJAX(params)
+  const params = $.extend({}, jeedom.private.default_params, paramsSpecifics, _params || {})
+  const paramsAJAX = jeedom.private.getParamsAJAX(params)
   paramsAJAX.url = 'plugins/blescanner/core/ajax/blescanner.ajax.php'
   paramsAJAX.data = {
 	action: 'setMode',
@@ -22,16 +22,16 @@ jeedom.blescanner.setMode = function(_params) {
 
 
 jeedom.blescanner.setAway = function(_params) {
-  var paramsRequired = ['away']
-  var paramsSpecifics = {}
+  const paramsRequired = ['away']
+  const paramsSpecifics = {}
   try {
         jeedom.private.checkParamsRequired(_params || {}, paramsRequired)
   } catch (e) {
         (_params.error || paramsSpecifics.error || jeedom.private.default_params.error)(e)
         return
   }
-  var params = $.extend({}, jeedom.private.default_params, paramsSpecifics, _params || {})
-  var paramsAJAX = jeedom.private.getParamsAJAX(params)
+  const params = $.extend({}, jeedom.private.default_params, paramsSpecifics, _params || {})
+  const paramsAJAX = jeedom.private.getParamsAJAX(params)
   paramsAJAX.url = 'plugins/blescanner/core/ajax/blescanner.ajax.php'
   paramsAJAX.data = {
         action: 'setAway',
@@ -42,12 +42,12 @@ jeedom.blescanner.setAway = function(_params) {
 
 jeedom.blescanner.addDevice = function(_params) {
   // alert("*** jeedom.blescanner.addDevice : " +  JSON.stringify(_params));
-  var paramsRequired = ['id']
-  var paramsSpecifics = {}
+  const paramsRequired = ['id']
+  const paramsSpecifics = {}
   try {
         jeedom.private.checkParamsRequired(_params || {}, paramsRequired);
-  	var params = $.extend({}, jeedom.private.default_params, paramsSpecifics, _params || {});
-  	var paramsAJAX = jeedom.private.getParamsAJAX(params);
+  	const params = $.extend({}, jeedom.private.default_params, paramsSpecifics, _params || {});
+  	const paramsAJAX = jeedom.private.getParamsAJAX(params);
   	paramsAJAX.url = 'plugins/blescanner/core/ajax/blescanner.ajax.php';
   	paramsAJAX.data = {
         	action: 'addDevice',
@@ -75,7 +75,7 @@ $('#mode_options input').change(function() {
 });
 
 $('#display_options input').change(function() {
-  //alert("*** onchange display away: " + $(this).val());
+  //alert("*** onchange display options: " + $(this).val());
   jeedom.blescanner.setAway({
         away: $(this).val(),
         global: false
@@ -83,7 +83,7 @@ $('#display_options input').change(function() {
   reloadModal();
 });
 
-$('#table_listblescanner').off().on('click', '.addDevice', function() {
+$('#table_list2').off().on('click', '.addDevice', function() {
 //  alert("*** onclick addDevice: " + $(this).attr('data-id'));
   jeedom.blescanner.addDevice({
 	id: $(this).attr('data-id'),
@@ -91,10 +91,9 @@ $('#table_listblescanner').off().on('click', '.addDevice', function() {
   })
 });
 
-
 function toggleAway() {
-  var checkBox = document.getElementById("display_away");
-  var text = document.getElementById("text");
+  const checkBox = document.getElementById("display_away");
+  const text = document.getElementById("text");
   if (checkBox.checked == true) {
       jeedom.blescanner.setAway({
         away: 'on',
@@ -107,7 +106,7 @@ function toggleAway() {
   reloadModal();
 }
 
-$('.refreshGraph[data-action=refresh]').on('click',function() {
+$('.refreshBtn[data-action=refresh]').on('click',function() {
   reloadModal();
 });
 

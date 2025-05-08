@@ -39,12 +39,17 @@ if (!isConnect('admin')) {
 	}
 	.graphBtn {
 		margin-left:10px;
+		width:30px;
 	}
-/*
-	.separator {
-		width: 10px;
+	.graphLabel {
+		width:200px;
 	}
-*/
+        .display_options {
+//              position: fixed;
+//              margin-left: 0px;
+                margin-left: 15px;
+//              border: 1px solid green;
+        }
         .legend {
 		width: 200px;
                 position: fixed;

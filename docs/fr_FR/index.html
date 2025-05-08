@@ -1,103 +1,118 @@
-<h1>Plugin Jeedom pour scanner les devices Bluetooth et superviser les antennes BLE via MQTT</h1>
+<h1>Plugin Jeedom pour gérer les devices Bluetooth et les antennes BLE ESP32 par MQTT</h1>
 
 <p><img src="../images/jeedom.png" alt="Logo Jeedom" title="" />
 <img src="../images/blescanner_icon.png" alt="Logo Plugin" title="" />
 <img src="../images/theengs_icon.png" alt="Logo Plugin" title="" /></p>
 
-<p>Ce plugin permet de scanner les devices bluetooth et de découvrir/gérer les antennes BLE <a href="https://docs.openmqttgateway.com">OMG ESP32</a> ou <a href="https://gateway.theengs.io">Theengs gateway</a> via MQTT. 
-Il est possible de surveiller et de gérer les paramètres des antennes ESP32 mais pas les antennes Theengs qui ne supportent pas (encore?) l'auto-découverte Home Assistant. </p>
-
-<p>Le plugin est complémentaire du <a href="https://mips2648.github.io/jeedom-plugins-docs/MQTTDiscovery/fr_FR">#plugin-mqttdiscovery</a> et il peut aussi fonctionner sans. 
-Dans ce dernier cas seuls des devices inconnus seront affichés. Avec quelques modifications il serait aussi possible de détecter certains devices du <a href="https://domotruc.github.io/jMQTT/fr_FR">#plugin-jmqtt</a> (à vérifier)</p>
+<p>Ce plugin permet de découvrir/gérer les devices bluetooth et les antennes BLE <a href="https://docs.openmqttgateway.com">OMG ESP32</a>. Les antennes <a href="https://gateway.theengs.io">Theengs</a> sont aussi reconnues mais pas leurs paramètres car elles ne supportent pas (encore?) l'auto-découverte Home Assistant. Il ne remplace pas le <a href="https://mips2648.github.io/jeedom-plugins-docs/tgw/fr_FR/">#plugin-theengs</a> pour déployer et gérer les antennes Theengs.</p>
 
 <h2>Documentation</h2>
 
 <ul>
 <li><a href="#configuration">Configuration</a></li>
 <li><a href="#auto-découverte">Auto-découverte</a></li>
-<li><a href="#liste-des-devices-connus">Liste des devices connus</a></li>
-<li><a href="#réseau-des-devices-connus">Réseau des devices connus</a></li>
 <li><a href="#liste-des-devices-inconnus">Liste des devices inconnus</a></li>
 <li><a href="#réseau-des-devices-inconnus">Réseau des devices inconnus</a></li>
-<li><a href="#santé">Santé</a></li>
-<li><a href="#antennes">Antennes</a></li>
+<li><a href="#liste-des-devices-connus">Liste des devices connus</a></li>
+<li><a href="#réseau-des-devices-connus">Réseau des devices connus</a></li>
+<li><a href="#devices-et-antennes">Devices et Antennes</a></li>
+<li><a href="#santé-antennes">Santé Antennes</a></li>
 <li><a href="#faq">FAQ</a></li>
 <li><a href="#bugs-et-dépannage">Bugs et dépannage</a></li>
 </ul>
 
 <h3>Configuration</h3>
 
-<p><img src="../images/blescanner1.png" alt="config" title="" />
-Le plugin requiert le <a href="https://doc.jeedom.com/fr_FR/plugins/programming/mqtt2">#plugin-mqtt2</a>.</p>
+<p>Le plugin requiert le <a href="https://doc.jeedom.com/fr_FR/plugins/programming/mqtt2">#plugin-mqtt2</a>.</p>
 
 <h4>Paramètres:</h4>
 
 <ul>
-<li>Utiliser MQTTDiscovery: C'est le mode par défaut qui permet de lister et d'afficher le réseau des devices connus cad déjà ajoutés au <code>#plugin-mqttdiscovery</code></li>
-<li>Utiliser jMQTT: lister et afficher les devices du <code>#plugin-jmqtt</code> (sous réserve)</li>
-<li>Durée d'auto-découverte: Délai de détection des antennes et des devices (en minutes)</li>
-<li>Délai d'absence: délai après lequel les devices inactifs seront supprimés (em minutes, 0 pour les garder indéfiniment)</li>
+<li>Création automatique: création automatique des devices BLE (désactivé par défaut)</li>
+<li>Durée d'auto-découverte: délai de détection des antennes et des devices (en minutes)</li>
+<li>Délai d'absence: délai après lequel les devices inactifs seront supprimés (en minutes, 0 pour les garder indéfiniment)</li>
 <li>Topic de découverte: topic d'auto-découverte Home Assistant. défaut: <code>homeassistant</code></li>
-<li>Topics racines des equipements: topics surveillés par le plugin (au moins un). </li>
+<li>Topics racines des équipements: topics surveillés par le plugin (au moins un). </li>
 </ul>
+
+<p><img src="../images/blescanner1.png" alt="config" title="" /></p>
 
 <h3>Auto-découverte</h3>
 
+<p>L'auto-découverte est active au démarrage, les antennes détectées sont ajoutées automatiquement. Vous pouvez également l'interrompre ou la relancer avec le bouton <code>Auto-découverte</code>. 
+<br>Si la création automatique a été cochée sur la page configuration les devices seront automatiquement ajoutés en fin de synchroniation.</p>
+
 <p><img src="../images/blescanner2.png" alt="disco" title="" /></p>
-
-<p>L'auto-découverte est active au démarrage, les antennes détectées sont ajoutées automatiquement. Vous pouvez également l'interrompre ou la relancer avec le bouton auto-découverte.</p>
-
-<h3>Liste des devices connus</h3>
-
-<p><img src="../images/blescanner3.png" alt="list1" title="" /></p>
-
-<p>Seront affichés les devices déjà ajoutés aux plugins <code>#plugin-mqttdiscovery</code> et/ou <code>#plugin-jmqtt</code>
-<br>Il est également possible de filter les devices absents.</p>
-
-<h3>Réseau des devices connus</h3>
-
-<p><img src="../images/blescanner4.png" alt="#network1" title="" /></p>
-
-<p>L'affichage contextuel peut se faire par atténuation ou par distance (si supporté). 
-Il s'active en sélectionnant un noeud. L'animation peut être mise en pause.
-<br>Il est également possible de filter les devices absents.</p>
 
 <h3>Liste des devices inconnus</h3>
 
+<p>Affiche tous les devices non gérés. La colonne <code>Découvrable</code> permet de déterminer si les devices supportent l'auto-découverte ou pas. Il est possible de filtrer les lignes du tableau par clic sur les entêtes de colonnes.
+<br>Le bouton <code>Ajouter</code> permet d'ajouter les devices découverts un par un. Si le device est auto-découvrable ses commandes seront automatiquement créées, sinon seuls la présence et le RSSI seront disponibles.</p>
+
 <p><img src="../images/blescanner5.png" alt="list2" title="" /></p>
-
-<p>Affiche tous les devices non ajoutés dans les <code>#plugin-mqttdiscovery</code> ou <code>#plugin-jmqtt</code>.</p>
-
-<p>Le bouton <code>Ajouter</code> permet de les ajouter au <code>#plugin-mqttdiscovery</code>.
-<br>Si le device est auto-découvrable ses commandes seront automatiquement ajoutées, sinon seuls la présence et le RSSI seront disponibles.</p>
 
 <h3>Réseau des devices inconnus</h3>
 
+<p>L'affichage contextuel peut se faire par atténuation ou par distance (si supporté par l'antenne). 
+<br>Il s'active en sélectionnant un noeud. L'animation peut être mise en pause et le graphe est zoomable.</p>
+
 <p><img src="../images/blescanner6.png" alt="#network1" title="" /></p>
 
-<h3>Santé</h3>
+<h3>Liste des devices connus</h3>
 
-<p><img src="../images/blescanner9.png" alt="Configuration" title="" /></p>
+<p>Sont affichés les devices déjà ajoutés. Il est possible d'afficher les devices absents et de filtrer les lignes du tableau par clic sur les entêtes de colonnes.</p>
 
-<h3>Antennes</h3>
+<p><img src="../images/blescanner3.png" alt="list1" title="" /></p>
+
+<h3>Réseau des devices connus</h3>
+
+<p>L'affichage contextuel peut se faire par atténuation ou par distance (si supporté par l'antenne). 
+Il s'active en sélectionnant un noeud. 
+<br>L'animation peut être mise en pause.  Il est également possible de filter les devices absents.</p>
+
+<p><img src="../images/blescanner4.png" alt="#network1" title="" /></p>
+
+<h3>Devices et Antennes</h3>
+
+<p>Les commandes disponibles dépendent du type de device ou d'antenne.
+<br> Une image personnalisée peut être ajoutée par catégorie d'équipement.</p>
+
+<p>Les antennes Theengs n'ont aucune commande sauf la présence. Les antennes ESP32 possèdent plusieurs commandes supplémentaires, cf les onglets <code>Bluetooth</code> et <code>Système</code>.
+<br>Le bouton <code>Console web</code> permet d'accéder à l'interface d'administration des ESP32. 
+<br>Pour plus d'informations voir la doc des <a href="https://docs.openmqttgateway.com/use/gateway.html#system-commands-esp-only">commandes ESP32</a></p>
 
 <p><img src="../images/blescanner7.png" alt="Equipments" title="" /></p>
 
 <p><img src="../images/blescanner8.png" alt="Equipments" title="" /></p>
 
-<p>Les commandes disponibles dépendent du type d'antenne.
-<br>Le bouton <code>Console web</code> permet d'accéder à l'interface d'administration des ESP32. 
-<br>Pour plus d'informations voir la doc des <a href="https://docs.openmqttgateway.com/use/gateway.html#system-commands-esp-only">commandes ESP32</a></p>
+<h4>Commandes personnalisées</h4>
+
+<p>L'onglet <code>Custom</code> permet d'ajouter des commandes personnalisées qui seraient présentes dans l'advertising mais pas dans l'auto-découverte (selon les devices), par ex ici la température en Farenheit (<code>tempf</code>) pour un Xiaomi <code>lywsd03mmc</code> reprogrammé:</p>
+
+<p><img src="../images/blescanner11.png" alt="Configuration" title="" /></p>
+
+<p>Idem pour les commandes manquantes d'un <code>ESP32</code> comme l'activation/désactivation du décodage externe ou le nombre de messages recus:</p>
+
+<p><img src="../images/blescanner10.png" alt="Configuration" title="" /></p>
+
+<p>Pour les actions le champ <code>payload</code> doit être de la forme <code>"clé1":valeur1 , "clé2":valeur2...</code>
+<br>Les données d'advertising et les données auto-découvertes sont disponibles dans la colonne <code>Autres données</code> de la page <a href="#liste-des-devices-inconnus">Liste des devices inconnus</a></p>
+
+<h3>Santé Antennes</h3>
+
+<p><img src="../images/blescanner9.png" alt="Configuration" title="" /></p>
 
 <h3>FAQ</h3>
 
 <ul>
 <li>Les antennes ne sont pas détectées ou certains devices ne s'affichent pas comme découvrables:
-<br>Relancez l'auto-découverte sur vos antennes (<code>BT: Force scan</code> ou reboot de l'ESP32)</li>
+<br>Relancez l'auto-découverte sur vos antennes (<code>BT: Force scan</code> ou reboot de l'ESP32 ou de l'antenne Theengs)</li>
 <li>Les commandes ESP32 ne sont pas créées
 <br>Activez le paramètre <code>SYS: Auto discovery</code></li>
-<li>Les distances ne s'affichent pas:
-<br>Seuls les ESP32 remontent cette information (expérimental). Pour cela activez le paramètre <code>BT: Publish HASS presence</code></li>
+<li>Les données d'advertising ne s'affichent pas (ESP32)
+<br> Activez le paramètre <code>BT: Publish Advertisement data</code> </li>
+<li>Les distances ne s'affichent pas
+<br>Seuls les ESP32 remontent cette information à partir du fw v1.8 (feature expérimentale). Pour cela activez le paramètre <code>BT: Publish HASS presence</code></li>
 </ul>
 
 <h3>Bugs et dépannage</h3>

@@ -1,4 +1,4 @@
-# Jeedom Plugin to scan Bluetooth devices and monitor BLE antennas using MQTT
+# Jeedom Plugin for managing Bluetooth Devices and ESP32 BLE Antennas with MQTT
 
 ![Logo Jeedom](docs/images/jeedom.png)
 ![Logo Plugin](docs/images/blescanner_icon.png)
@@ -10,11 +10,10 @@
 - User Documentation [(fr)](docs/fr_FR/index.md)
 
 ## ChangeLog
+* v0.2 [lxrootard](https://github.com/lxrootard)
+<br> - added device management support, removed dependencies
 * v0.1 [lxrootard](https://github.com/lxrootard)
 <br> - initial version
-
-## Todo
-* jMQTT plugin support
 
 ## Credits and dependencies
 Author: lxrootard

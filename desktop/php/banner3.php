@@ -18,17 +18,9 @@ if (!isConnect('admin')) {
 	throw new Exception('401 - {{Accès non autorisé}}');
 }
 ?>
-<style type="text/css">
-	.display_options {
-//		position: fixed;
-//		margin-left: 0px;
-		margin-left: 15px;
-//		border: 1px solid green;
-	}
-</style>
 <div class="display_options">
    <span>
-        <label for="display_away">{{Afficher les devices absents}}&nbsp;
+        <label class="graphLabel" for="display_away">{{Afficher les devices absents}}
                 <sup><i class="fas fa-question-circle tooltips"
                         title="{{Afficher les devices connus absents ou non détectés}}"></i></sup>
         </label>
@@ -36,7 +28,6 @@ if (!isConnect('admin')) {
 	$away = cache::byKey('blescanner::display_away')->getValue();
 //	log::add('blescanner', 'debug',  '> list1: display away devices: $$' . $away . '$$');
 	$checked = ($away == 'on')? 'checked': '';
-//      log::add('blescanner', 'debug',  'dans le html: checked? $$' . $checked . '$$');
         echo '<input type="checkbox" id="display_away" ' . $checked . ' onclick="toggleAway()"/>';
 	?>
    </span>

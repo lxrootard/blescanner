@@ -21,37 +21,68 @@ if (!isConnect('admin')) {
 $plugin = plugin::byId('blescanner');
 $devices = cache::byKey('blescanner::unknown_devices')->getValue();
 $antennas = eqLogic::byType('blescanner');
-$useMqttDisco = config::byKey('use_mqttdiscovery','blescanner');
-
 ?>
+<style type="text/css">
+        html, body, svg {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                font-family: Arial;
+        }
+        .table {
+                margin-left: 0px;
+                margin-top: 20px;
+        }
+	.table-responsive {
+		width: 100%;
+	}
+	.refresh-modal {
+                float: right;
+		margin-right: 5px;
+        }
+</style>
+
 <div id="modal_msg" style="display: none"></div>
-<div class="refresh-modal" style="float: right">
+<div class="refresh-modal">
         <label>{{Rafraîchir }}&nbsp;</label>
-        <a class="btn btn-success refreshGraph" data-action="refresh"><i class="fas fa-sync"></i></a>
+        <a class="btn btn-success refreshBtn" data-action="refresh"><i class="fas fa-sync"></i></a>
 </div>
-<table class="table table-condensed tablesorter" id="table_listblescanner">
+<div class="table-responsive">
+  <table class="table table-condensed tablesorter" id="table_list2">
 	<thead>
      		<tr>
-			<th>{{N° de série}}</th>
-			<th>{{Nom}}</th>
-			<th>{{Modèle}}</th>
-			<th>{{Marque}}</th>
-			<th>{{RSSI}}</th>
-			<th>{{Distance}}</th>
-			<th>{{Découvrable}}</th>
-			<th>{{Autres données}}</th>
+			<th data-sortable="true" data-sorter="inputs">{{N° de série}}</th>
+			<th data-sorter="select-text">{{Nom}}</th>
+			<th data-sorter="select-text">{{Marque}}</th>
+			<th data-sorter="select-text">{{Modèle}}</th>
+			<th data-sorter="select-text">{{Découvrable}}</th>
+			<th data-sorter="false">{{RSSI}}</th>
+			<th data-sorter="false">{{Distance}}</th>
+			<th data-sorter="false">{{Autres données}}</th>
 		</tr>
 	</thead>
 	<tbody>
 <?php
+uasort($devices, function($a, $b) {
+    return strcmp($a['discoverable'], $b['discoverable']);
+});
+
 foreach ($devices as $uid => $dev) {
+	// log::add('blescanner', 'debug', 'device: ' . $uid . ' value: ' .json_encode($dev));
 	if (! $dev['present'])
 		continue;
 	echo '<tr>';
 	echo '<td><span class="label label-info">' . $dev['id'] . '</span></td>';
 	echo '<td><span class="label label-info">' . $dev['name'] . '</span></td>';
+	echo '<td><span class="label label-info">' . $dev['manufacturer'] . '</span></td>';
 	echo '<td><span class="label label-info">' . $dev['model'] . '</span></td>';
-	echo '<td><span class="label label-info">' . $dev['brand'] . '</span></td>';
+
+        $status = '<span class="label label-danger" style="font-size : 1em;cursor:default;">{{Non}}</span>';
+        if ($dev['discoverable'])
+                $status = '<span class="label label-success" style="font-size : 1em;cursor:default;">{{Oui}}</span>';
+        echo '<td>' . $status . '</td>';
+
 	echo '<td>';
 	foreach ($antennas as $a) {
 	   if ($a->getIsEnable() && $a->isAlive()) {
@@ -86,11 +117,6 @@ foreach ($devices as $uid => $dev) {
 	}
 	echo '</td>';
 
-        $status = '<span class="label label-danger" style="font-size : 1em;cursor:default;">{{Non}}</span>';
-        if ($dev['discoverable'])
-                $status = '<span class="label label-success" style="font-size : 1em;cursor:default;">{{Oui}}</span>';
-        echo '<td>' . $status . '</td>';
-
         $payload = $dev['other'];
         echo '<td>';
         foreach ($payload as $key => $value) {
@@ -100,25 +126,32 @@ foreach ($devices as $uid => $dev) {
                         echo ', ';
         }
         echo '</td>';
-	if ($useMqttDisco) {
-		echo '<td>';
-		echo '<a class="btn btn-primary btn-sm cursor roundedLeft addDevice" data-id="' . $uid . '">';
-		echo '<i class="fas fa-check-circle"></i> {{Ajouter}}</a>';
-		echo '</td>';
-	}
+	echo '<td>';
+	echo '<a class="btn btn-primary btn-sm cursor roundedLeft addDevice" data-id="' . $uid . '">';
+	echo '<i class="fas fa-check-circle"></i> {{Ajouter}}</a>';
+	echo '</td>';
 	echo '</tr>';
 }
 ?>
 	</tbody>
-</table>
+  </table>
+</div>
 
 <script>
+var manualClose = true; // assume user closes unless overridden
 function reloadModal() {
+  manualClose = false; // suppress reload during refresh
   // console.log('reload page list1');
   $('#md_modal').dialog('close');
 //  $('#md_modal').dialog({title: "{{Liste devices BLE incconnus}}"});
   $('#md_modal').load('index.php?v=d&plugin=blescanner&modal=list2').dialog('open');
+  manualClose = true;
 }
+
+$(function() {
+  $("#table_list2").tablesorter();
+});
+
 </script>
 
 <?php

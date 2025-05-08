@@ -14,80 +14,64 @@
 * along with Jeedom. If not, see <http://www.gnu.org/licenses/>.
 */
 
-// Get the tags and input elements from the DOM
-var tags = document.getElementById('data-topic-tags');
-var input = document.getElementById('topic-input-tag');
-var initDataTagsDone = false;
+var addBtn = document.getElementById("bt_add_topic");
+var newTopic = document.getElementById("new-topic");
+var topicsList = document.getElementById("topics-list");
+var hiddenInput = document.querySelector('.configKey[data-l1key="ble_root_topics"]');
+var initDone = false;
 
-// Add an event listener for keydown on the input element
-input.addEventListener('keydown', function(event) {
-    // Check if the key pressed is 'Enter'
-    if (event.key === 'Enter') {
-      // Prevent the default action of the keypress
-      // event (submitting the form)
-      event.preventDefault();
+function updateHiddenInput() {
+    const topics = Array.from(topicsList.querySelectorAll("li")).map(li => li.dataset.topic);
+    hiddenInput.value = topics.join(',');
+}
 
-      const tagContent = input.value.trim();
-      input.value = '';
-      addDataTag(tagContent);
-    }
-});
+function createTopicElement(topic) {
+    const li = document.createElement("li");
+    li.dataset.topic = topic;
+    li.textContent = topic + " ";
+    const removeBtn = document.createElement("a");
+    removeBtn.innerHTML += '<button class="bt_remove_topic" title="{{Supprimer ce topic}}"><i class="fas fa-minus-circle"></i></button>';
+    removeBtn.addEventListener("click", function (e) {
+	e.preventDefault();
+	li.remove();
+	updateHiddenInput();
+    });
+    li.appendChild(removeBtn);
+    topicsList.appendChild(li);
+}
 
-  // Add an event listener for click on the tags list
-tags.addEventListener('click', function(event) {
-    event.preventDefault();
-    const myButton = event.target.closest('.delete-tag-button')
-    // If the clicked element has the class 'delete-button'
-    if (myButton) {
-      // Remove the parent element (the tag)
-      myButton.parentNode.remove();
-      updateConfigInputTopics();
-    }
-});
+function addTopic() {
+    const topic = newTopic.value.trim();
+    if (topic === "") return;
 
-function addDataTag(content) {
-    if (content !== '') {
-      selectedList = $(`#data-topic-tags li:contains('${content}')`);
-
-      if (selectedList.length) {
-        //already in list
-        return;
-      }
-
-      // Create a new list item element for the tag
-      const tag = document.createElement('li');
-      tag.innerText = content;
-      tag.innerHTML += '<button class="delete-tag-button" title="{{Supprimer ce topic}}"><i class="fas fa-minus-circle"></i></button>';
-      tags.appendChild(tag);
-
-      updateConfigInputTopics();
+    const existingTopics = Array.from(topicsList.querySelectorAll("li")).map(li => li.dataset.topic);
+    if (!existingTopics.includes(topic)) {
+	createTopicElement(topic);
+	updateHiddenInput();
+	newTopic.value = "";
     }
 }
 
-function updateConfigInputTopics() {
-    const topics = Array.from(tags.children)
-    document.querySelector('.configKey[data-l1key="ble_root_topics"]').value = topics.map(x => x.firstChild.textContent).join(',');
-  }
+addBtn.addEventListener("click", addTopic);
 
-  function initDataTopicTagsList() {
-    const topics = document.querySelector('.configKey[data-l1key="ble_root_topics"]').value.split(',');
-    topics.forEach(t => addDataTag(t));
-  }
-
-  $('.configKey[data-l1key="ble_root_topics"]').change(function() {
-    if (!initDataTagsDone) {
-      initDataTopicTagsList();
+newTopic.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+	e.preventDefault();
+	addTopic();
     }
-
-    initDataTagsDone = true
 });
 
-$('#bt_add').off('click').on('click', function() {
-    const tagContent = input.value.trim();
-    input.value = '';
-    addDataTag(tagContent);
+function initializeTopics() {
+    topicsList.innerHTML = "";
+    hiddenInput.value.split(',').forEach(t => createTopicElement(t));
+}
+
+$('.configKey[data-l1key="ble_root_topics"]').change(function() {
+    if (! initDone)
+	initializeTopics();
+    initDone = true;
 });
 
 $('body').off('blescanner::dependancy_end').on('blescanner::dependancy_end', function(_event, _options) {
-  window.location.reload()
+    window.location.reload();
 })

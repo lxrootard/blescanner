@@ -43,9 +43,7 @@ foreach ($devices as $uid => $dev) {
 			$dist = -1;
 		$dNodes[$uid]['distance ' . $aUid] = $dist;
 		if ((is_null($rssi)) || (! $aNodes[$aUid]['online']))
-			$rssi = -200; // MQTTDiscovery ne fait pas la maj dans ce cas
-
-		// log::add('blescanner', 'debug', 'graph() rssi ' . $aName . ': ' . $rssi);
+			$rssi = -200;
 		$dNodes[$uid]['rssi ' . $aUid] = $rssi;
 		$dNodes[$uid]['rssi'] = max ($dNodes[$uid]['rssi'], $rssi);
 	}

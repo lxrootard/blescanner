@@ -19,17 +19,18 @@ if (!isConnect('admin')) {
 	throw new Exception('401 - Accès non autorisé');
 }
 $plugin = plugin::byId('blescanner');
-$eqLogics = blescanner::byType('blescanner');
+$eqLogics = blescanner::getDevices('Antenna');
 ?>
 
 <style type="text/css">
         .refresh-modal {
                 float: right;
+		margin-bottom: 20px;
         }
 </style>
 <div class="refresh-modal">
         <label>{{Rafraîchir }}&nbsp;</label>
-        <a class="btn btn-success refreshGraph" data-action="refresh"><i class="fas fa-sync"></i></a>
+        <a class="btn btn-success refreshBtn" data-action="refresh"><i class="fas fa-sync"></i></a>
 </div>
 
 <table class="table table-condensed tablesorter" id="table_healthblescanner">
@@ -38,7 +39,7 @@ $eqLogics = blescanner::byType('blescanner');
 			<th>{{Image}}</th>
 			<th>{{Antenne}}</th>
 			<th>{{ID}}</th>
-                        <th>{{N° de série}}</th>
+                        <th>{{Identifiant}}</th>
 			<th>{{Type}}</th>
 			<th>{{Modèle}}</th>
 			<th>{{Version}}</th>
@@ -50,30 +51,30 @@ $eqLogics = blescanner::byType('blescanner');
 	<tbody>
 <?php
 foreach ($eqLogics as $eqLogic) {
-	$image = '<img src="' . $plugin->getPathImgIcon() . '" height="55" width="55" />';
-	echo '<tr><td>' . $image . '</td><td><a href="' . $eqLogic->getLinkToConfiguration() . '" style="text-decoration: none;">' . $eqLogic->getHumanName(true) . '</a></td>';
-	echo '<td><span class="label label-info" style="font-size : 1em; cursor : default;">' . $eqLogic->getId() . '</span></td>';
-	echo '<td><span class="label label-info" style="font-size : 1em; cursor : default;">' . $eqLogic->getConfiguration('antennaUid') . '</span></td>';
-	echo '<td><span class="label label-info" style="font-size : 1em; cursor : default;">' . $eqLogic->getConfiguration('antennaType') . '</span></td>';
-        echo '<td><span class="label label-info" style="font-size : 1em; cursor : default;">' . $eqLogic->getConfiguration('antennaModel') . '</span></td>';
-	echo '<td><span class="label label-info" style="font-size : 1em; cursor : default;">' . $eqLogic->getConfiguration('antennaVersion') . '</span></td>';
-        $alive = $eqLogic->isAlive();
-	$status = '<span class="label label-danger" style="font-size : 1em; cursor : default;">{{NOK}}</span>';
-        if ($alive)
-           $status = '<span class="label label-success" style="font-size : 1em; cursor : default;">{{OK}}</span>';
- 	echo '<td>' . $status . '</td>';
+   $image = '<img src="' . $eqLogic->getImage() . '" height="55" width="55" />';
+   echo '<tr><td>' . $image . '</td><td><a href="' . $eqLogic->getLinkToConfiguration() . '" style="text-decoration: none;">' . $eqLogic->getHumanName(true) . '</a></td>';
+   echo '<td><span class="label label-info" style="font-size : 1em; cursor : default;">' . $eqLogic->getId() . '</span></td>';
+   echo '<td><span class="label label-info" style="font-size : 1em; cursor : default;">' . $eqLogic->getConfiguration('antennaUid') . '</span></td>';
+   echo '<td><span class="label label-info" style="font-size : 1em; cursor : default;">' . $eqLogic->getConfiguration('manufacturer') . '</span></td>';
+   echo '<td><span class="label label-info" style="font-size : 1em; cursor : default;">' . $eqLogic->getConfiguration('model') . '</span></td>';
+   echo '<td><span class="label label-info" style="font-size : 1em; cursor : default;">' . $eqLogic->getConfiguration('version') . '</span></td>';
+   $alive = $eqLogic->isAlive();
+   $status = '<span class="label label-danger" style="font-size : 1em; cursor : default;">{{NOK}}</span>';
+   if ($alive)
+	$status = '<span class="label label-success" style="font-size : 1em; cursor : default;">{{OK}}</span>';
+   echo '<td>' . $status . '</td>';
 
-	echo '<td><span class="label label-info" style="font-size : 1em; cursor : default;">' . $eqLogic->getStatus('lastCommunication') . '</span></td>';
-	echo '<td><span class="label label-info" style="font-size : 1em; cursor : default;">' . $eqLogic->getConfiguration('createtime') . '</span></td>';
+   echo '<td><span class="label label-info" style="font-size : 1em; cursor : default;">' . $eqLogic->getStatus('lastCommunication') . '</span></td>';
+   echo '<td><span class="label label-info" style="font-size : 1em; cursor : default;">' . $eqLogic->getConfiguration('createtime') . '</span></td>';
 }
 ?>
 	</tbody>
 </table>
 <script>
 function reloadModal() {
-  $('#md_modal').dialog('close');
-  // $('#md_modal').dialog({title: "{{Liste devices BLE connus}}"});
-  $('#md_modal').load('index.php?v=d&plugin=blescanner&modal=health').dialog('open');
+   $('#md_modal').dialog('close');
+   // $('#md_modal').dialog({title: "{{Liste devices BLE connus}}"});
+   $('#md_modal').load('index.php?v=d&plugin=blescanner&modal=health').dialog('open');
 }
 </script>
 
