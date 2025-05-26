@@ -25,8 +25,8 @@ if (!isConnect()) {
 ?>
 
 <style>
-  .input-group {
-   width: 65%;
+  .topics-list {
+   width: 400px;
   }
   .root-topics ul {
     list-style: none;
@@ -47,67 +47,111 @@ if (!isConnect()) {
     color: white;
     margin-left: 5px;
   }
+  .warning-tooltip {
+    color: var(--al-warning-color);
+  }
+
 </style>
 
 <form class="form-horizontal">
   <fieldset>
-     <div class="form-group">
-        <label class="col-xs-2 control-label">{{Création automatique}}
-                <sup><i class="fas fa-question-circle tooltips" title="{{Créer automatiquement les devices auto-découverts}}"></i></sup>
-        </label>
-        <div class="col-md-1">
-                <input type="checkbox" class="configKey form-control" data-l1key="auto_create" unchecked>
-        </div>
-     </div>
-     <div class="form-group">
-        <label class="col-xs-2 control-label">{{Durée d'auto-découverte}}
-	    <sup><i class="fas fa-question-circle tooltips" title="{{Durée de l'auto-découverte (en minutes)}}"></i></sup>
-        </label>
-	<div class="col-xs-1">
-	    <input class="configKey form-control" data-l1key="disco_duration"/>
+     <div class="col-md-6">
+	<legend><i class="fab fa-hubspot"></i>&nbsp;{{Broker MQTT}}</legend>
+	<div class="form-group">
+	   <label class="col-lg-4 control-label">{{Adresse du broker}}&nbsp;
+	     <sup><i class="fa fa-question-circle tooltips" title="{{URL du service MQTT}}"></i></sup>
+	   </label>
+	   <div class="col-lg-6 input-group">
+	     <span class="input-group-addon">mqtt://</span>
+	     <input class="configKey form-control tooltips" data-l1key="broker" data-l2key="mqtt_host" value="localhost"
+		title="{{Adresse IP du Broker. Défaut: localhost}}"/>
+	     <span class="input-group-addon">:</span>
+	     <input class="configKey form-control tooltips" data-l1key="broker" data-l2key="mqtt_port" placeholder="1883"
+		type="number" min="1" max="65535" title="{{Port  du Broker. Défaut: 1883}}"/>
+	   </div>
 	</div>
-	<span>{{mins}}</span>
+	<div class="form-group">
+	   <label class="col-lg-4 control-label">{{Authentification}}&nbsp;
+	     <sup><i class="fa fa-question-circle tooltips" title="{{Utilisateur et mot de passe}}"></i></sup>
+	   </label>
+	   <div class="col-lg-6 input-group">
+	     <input class="configKey form-control" data-l1key="broker" data-l2key="mqtt_user"/>
+             <span class="input-group-addon">:</span>
+             <input class="configKey form-control" data-l1key="broker" data-l2key="mqtt_passwd" type="password"/>
+	   </div>
+	</div>
+	<div class="form-group">
+	   <label class="col-lg-4 control-label">{{Topic de découverte}}&nbsp;
+	     <sup><i class="fas fa-question-circle tooltips" title="{{Topic d'auto-découverte. Défaut: homeassistant}}"></i></sup>
+	   </label>
+	   <div class="col-lg-3">
+	     <input class="configKey form-control" data-l1key="disco_topic" value="homeassistant"/>
+	   </div>
+	</div>
+	<div class="form-group">
+	   <label class="col-lg-4 control-label">{{Topics racines}}&nbsp;
+	     <sup><i class="fas fa-question-circle tooltips" title="{{Topics racines des antennes BLE à monitorer}}"></i></sup>
+	   </label>
+	   <div class="col-lg-3">
+	     <input class="configKey form-control" data-l1key="ble_root_topics" type="hidden"/>
+	     <div class="root-topics">
+		<div class="input-group">
+		  <input class="form-control" id="new-topic" placeholder="{{Ajouter un topic}}"/>
+		  <span class="input-group-btn">
+			<a class="btn btn-default form-control" id="bt_add_topic" title="{{Ajouter}}">
+				<i class="fas fa-plus-square"></i></a>
+		  </span>
+		</div>
+		<p>
+		<ul id="topics-list" class="topics-list"></ul>
+	     </div>
+	   </div>
+	</div>
      </div>
-     <div class="form-group">
-	<label class="col-xs-2 control-label">{{Délai d'absence}}
-	    <sup><i class="fas fa-question-circle tooltips"
-	    title="{{Délai pour considérer les devices comme absents (en minutes). 0 pour les garder sans limite}}"></i></sup>
-	</label>
-        <div class="col-xs-1">
-            <input class="configKey form-control" data-l1key="devices_timeout"/>
-        </div>
-	<span>{{mins}}</span>
-     </div>
-     <div class="form-group">
-        <label class="col-xs-2 control-label">{{Topic de découverte}}
-            <sup><i class="fas fa-question-circle tooltips"
-            title="{{Topic d'auto-découverte. Défaut: homeassistant}}"></i></sup>
-        </label>
-        <div class="col-xs-2">
-            <input class="configKey form-control" data-l1key="disco_topic"/>
-        </div>
-     </div>
-     <div class="form-group">
-	<label class="col-xs-2 control-label">{{Topics racines des équipements}}
-	    <sup><i class="fas fa-question-circle tooltips" title="{{Topics racines des antennes BLE à monitorer}}"></i></sup>
-        </label>
-        <div class="col-xs-3">
-          <input class="configKey form-control" data-l1key="ble_root_topics" type="hidden"/>
-          <div class="root-topics">
-            <div class="input-group">
-              <input class="form-control roundedLeft" id="new-topic" placeholder="{{Ajouter un topic}}"/>
-              <span class="input-group-btn">
-                <a class="btn btn-default form-control roundedRight" id="bt_add_topic" title="{{Ajouter}}"><i class="fas fa-plus-square"></i></a>
-              </span>
-            </div>
-	    <p>
-	    <ul id="topics-list"></ul>
-          </div>
-        </div>
+
+     <div class="col-md-6">
+	<legend><i class="fas fa-wifi"></i>&nbsp;{{Devices et Antennes}}</legend>
+	<div class="form-group">
+	   <label class="col-lg-4 control-label">{{Création automatique}}&nbsp;
+	     <sup><i class="fas fa-question-circle tooltips" title="{{Créer automatiquement les devices auto-découverts}}"></i></sup>
+	   </label>
+	   <div class="col-lg-1">
+	     <input type="checkbox" class="configKey form-control" data-l1key="auto_create" unchecked>
+	   </div>
+	</div>
+	<div class="form-group">
+	   <label class="col-lg-4 control-label">{{Durée d'auto-découverte}}&nbsp;
+	     <sup><i class="fas fa-question-circle tooltips" title="{{Durée de l'auto-découverte (en minutes)}}"></i></sup>
+	   </label>
+	   <div class="col-lg-2">
+	     <input class="configKey form-control" data-l1key="disco_duration" type="number" min="1" max="30" placeholder="5"/>
+	   </div>
+	   <span>{{mins}}</span>
+	</div>
+	<div class="form-group">
+	   <label class="col-lg-4 control-label">{{Délai d'absence}}&nbsp;
+	     <sup><i class="fas fa-question-circle tooltips"
+	        title="{{Délai pour considérer les devices comme absents (en minutes). 0 pour les garder sans limite}}"></i></sup>
+	   </label>
+	   <div class="col-lg-2">
+	      <input class="configKey form-control" data-l1key="devices_timeout" type="number" min="0" max="30" placeholder="2"/>
+	   </div>
+	   <span>{{mins}}</span>
+	</div>
+
+	<legend><i class="fab fa-whmcs"></i>&nbsp;{{Système}}</legend>
+	<div class="form-group">
+	   <label class="col-lg-4 control-label">{{Port du deamon}}&nbsp;
+	     <sup><i class="fas fa-exclamation-triangle tooltips warning-tooltip"
+		title="{{Port du deamon blescannerd. Ne pas modifier sauf en cas de conflit}}"></i></sup>
+	   </label>
+	   <div class="col-lg-2">
+	     <input class="configKey form-control" data-l1key="broker" data-l2key="deamon_port" type="number" min="1" max="65535" placeholder="55036"/>
+	   </div>
+	</div>
      </div>
   </fieldset>
 </form>
-
 <?php
 include_file('core', 'config', 'js', 'blescanner');
 ?>

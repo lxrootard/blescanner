@@ -15,15 +15,22 @@
 * along with Jeedom. If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* * ***************************Includes********************************* */
 require_once __DIR__  . '/../../../../core/php/core.inc.php';
+require_once __DIR__  . '/MQTTClient.php';
 
 class blescanner extends eqLogic {
 
+  private static $_deamon;
+
+  public static function getDeamon() {
+    if (is_null(self::$_deamon)) {
+	self::$_deamon =  new MQTTClient(__CLASS__);
+    }
+    return self::$_deamon;
+  }
+
   public static function dependancy_end() {
     log::add(__CLASS__, 'info', "Fin de configuration des dépendances");
-    if (shell_exec(system::getCmdSudo() . ' which mosquitto_sub | wc -l') == 0)
-	throw new Exception(__('commande mosquitto_sub non installée', __FILE__));
     if (config::byKey('ble_root_topics', __CLASS__) == null)
 	config::save('ble_root_topics','theengs',__CLASS__);
 
@@ -38,6 +45,15 @@ class blescanner extends eqLogic {
 
     if (config::byKey('auto_create',__CLASS__) == null)
 	config::save('auto_create',false,__CLASS__);
+
+    $mqttSettings = config::byKey('broker',__CLASS__);
+    if ($mqttSettings['mqtt_port'] == '')
+	$mqttSettings['mqtt_port'] = 1883;
+    if ($mqttSettings['mqtt_host'] == '')
+	$mqttSettings['mqtt_host'] = 'localhost';
+    if ($mqttSettings['deamon_port'] == '')
+	$mqttSettings['deamon_port'] = 55036;
+    config::save('broker',$mqttSettings);
   }
 
   public static function getDiscoTopic() {
@@ -124,7 +140,7 @@ class blescanner extends eqLogic {
 			foreach ($antennas as $a) {
 				$aId = $a->getLogicalId();
 				$dev['rssi ' . $aId] = -200;
-				$dev['distance ' .  $aId] = -200;
+				$dev['distance ' .  $aId] = -1;
 			}
 			$devs[$key] = $dev;
 		} else {
@@ -149,19 +165,14 @@ class blescanner extends eqLogic {
   }
 
   public static function initSettings() {
-    if (mqtt2::deamon_info()['state'] != 'ok') {
-	self::send_alert("Le démon MQTT Manager n'est pas démarré", __FILE__);
-	return false;
-    }
-
     $t1 = intval(config::byKey('disco_duration',__CLASS__));
-    log::add(__CLASS__, 'debug', '>>> timeout auto-découverte: ' . $t1 . ' mins');
+    log::add(__CLASS__, 'info', 'timeout auto-découverte: ' . $t1 . ' mins');
     if (! is_int($t1) || ($t1 < 1)) {
 	self::send_alert("La durée d'auto-découverte doit être un nombre entier de minutes", __FILE__);
 	return false;
     }
     $t2 =  intval(config::byKey('devices_timeout',__CLASS__));
-    log::add(__CLASS__, 'debug', '>>> timeout devices: ' . $t2 . ' mins');
+    log::add(__CLASS__, 'info', 'timeout devices: ' . $t2 . ' mins');
     if (! is_int($t2) || $t2 <0) {
 	self::send_alert("Le délai d'absence doit être un nombre entier de minutes", __FILE__);
 	return false;
@@ -170,9 +181,28 @@ class blescanner extends eqLogic {
 	self::send_alert("Ajoutez au moins un topic à surveiller", __FILE__);
 	return false;
     }
-
-    $mqttSettings = mqtt2::getFormatedInfos();
-    log::add(__CLASS__, 'debug', 'MQTT settings:' . json_encode($mqttSettings));
+    $mqttSettings = config::byKey('broker',__CLASS__);
+    // log::add(__CLASS__, 'debug', 'MQTT settings:' . json_encode($mqttSettings));
+    if ($mqttSettings['mqtt_host'] == '') {
+	self::send_alert("L'adresse du broker MQTT doit être renseignée", __FILE__);
+	return false;
+    }
+    if ($mqttSettings['mqtt_port'] == '') {
+	self::send_alert("Le port du broker MQTT doit être renseigné", __FILE__);
+	return false;
+    }
+    if ($mqttSettings['mqtt_user'] == '') {
+	self::send_alert("Le login du broker MQTT doit être renseigné", __FILE__);
+	return false;
+    }
+    if ($mqttSettings['mqtt_passwd'] == '') {
+	self::send_alert("Le mot de passe du broker MQTT doit être renseigné", __FILE__);
+	return false;
+    }
+    if ($mqttSettings['deamon_port'] == '') {
+	self::send_alert("Le port du callback Jeedom doit être renseigné", __FILE__);
+	return false;
+    }
     cache::set('blescanner::unknown_devices',array());
     cache::set('blescanner::display_mode','Attenuation');
     cache::set('blescanner::display_away','off');
@@ -186,12 +216,11 @@ class blescanner extends eqLogic {
     if ($disco)
 	return;
     $timeout = config::byKey('disco_duration', __CLASS__) . ' minute';
-    $msg = "*** Début d'auto-découverte, durée: " . $timeout . "(s)";
-    log::add(__CLASS__, 'debug', $msg);
+    $msg = "*** Début d'auto-découverte, durée: " . $timeout . "(s) ***";
+    log::add(__CLASS__, 'info', $msg);
     $topic = self::getDiscoTopic();
-    log::add(__CLASS__, 'debug', 'topic de discovery: ' . $topic);
-    mqtt2::removePluginTopic($topic);
-    mqtt2::addPluginTopic(__CLASS__, $topic);
+    log::add(__CLASS__, 'info', 'topic de discovery: ' . $topic);
+    self::getDeamon()->publish ('addTopic',$topic);
 
     event::add('blescanner::discovery', array('message' =>  __($msg, __FILE__), 'type' => 'start'));
     cache::set('blescanner::disco',strtotime('now') + ($timeout * 60));
@@ -202,9 +231,9 @@ class blescanner extends eqLogic {
     // log::add(__CLASS__, 'debug', '['. __FUNCTION__ .'] disco=' . $disco);
     if (! $disco)
 	return;
-    $msg = "*** Fin d'auto-découverte";
-    log::add(__CLASS__, 'debug', $msg);
-    mqtt2::removePluginTopic(self::getDiscoTopic());
+    $msg = "*** Fin d'auto-découverte ***";
+    log::add(__CLASS__, 'info', $msg);
+    self::getDeamon()->publish ('removeTopic',self::getDiscoTopic());
 
     if (config::byKey('auto_create',__CLASS__)) {
 	$devs = cache::byKey('blescanner::unknown_devices')->getValue();
@@ -247,7 +276,6 @@ class blescanner extends eqLogic {
 		foreach ($antennas as $a) {
 			$cid = $did . '-rssi-' . $a->getUid();
 			$val = $this->getCmdValue($cid);
-			// log::add(__CLASS__, 'debug', '***** CALCUL RSSI ' . $cid  . ' rssi=' . $rssi . ' new value=' . $val);
 			if ($val > $rssi)
 				$rssi = $val;
 		}
@@ -282,14 +310,15 @@ class blescanner extends eqLogic {
 	$dev['name'] = $value['name'];
 	$dev['model'] = isset($value['model']) ? $value['model'] : $value['model_id'];
 	$dev['manufacturer'] = $value['brand'];
-//	$dev['discoverable'] = false;
     }
-    if (isset($dev['model']))
-	$dev['pictureId'] = md5($dev['model']);
-    else if (isset($value['servicedatauuid']))
-	$dev['pictureId'] = md5($value['servicedatauuid']);
-    elseif (isset($value['manufacturerdata']))
-	$dev['pictureId'] = md5($value['manufacturerdata']);
+    if (!isset($dev['pictureId'])) {
+	if (isset($dev['model']))
+	    $dev['pictureId'] = md5($dev['model']);
+	else if (isset($value['servicedatauuid']))
+	    $dev['pictureId'] = md5($value['servicedatauuid']);
+	elseif (isset($value['manufacturerdata']))
+	    $dev['pictureId'] = md5($value['manufacturerdata']);
+    }
     $other = $value;
     $cols = array('id','rssi','name','mac','model','model_id','brand','distance','topic'); //,'manufacturer'
     foreach($cols as $k)
@@ -376,10 +405,8 @@ class blescanner extends eqLogic {
     $eqLogic->setLogicalId($id);
     $eqLogic->setName($name);
     $eqLogic->setEqType_name(__CLASS__);
-//  $eqLogic->setObject_id(19); // temp
     $eqLogic->setIsEnable(1);
     $eqLogic->setIsVisible(1);
-//  $eqLogic->setConfiguration('id', $dev['id']); utile ou pas?
     $eqLogic->setConfiguration('type', 'Device');
     if ($dev['manufacturer'] != null)
 	$eqLogic->setConfiguration('manufacturer', $dev['manufacturer']);
@@ -454,19 +481,21 @@ class blescanner extends eqLogic {
     }
   }
 
-  public static function handleMqttMessage($message) {
-    // log::add(__CLASS__, 'debug', '[' . __FUNCTION__ . '] message: ' . json_encode($message));
+  public static function handleMessage($message) {
+//  log::add(__CLASS__, 'debug', '[' . __FUNCTION__ . '] message: ' . json_encode($message));
     $root_topics = self::getRootTopics();
     $disco=cache::byKey('blescanner::disco')->getValue();
 
     foreach ($message as $topic => $content) {
-//  log::add(__CLASS__, 'debug', 'topic: ' . $topic);
-    if (($disco) && ($topic == self::getDiscoTopic()))
-	self::handleDiscovery ($content);
-    else if (in_array($topic, $root_topics))
-	self::handleMqttTopic ($topic, $content);
-//  else
-//      log::add(__CLASS__, 'debug', "Le message reçu n'est pas un message BLE: ". json_encode($root_topics));
+//  	log::add(__CLASS__, 'debug', 'topic: ' . $topic);
+    	if (($disco) && ($topic == self::getDiscoTopic()))
+	   self::handleDiscovery ($content);
+    	else if (in_array($topic, $root_topics))
+	   self::handleTopic ($topic, $content);
+/*
+    	else
+	   log::add(__CLASS__, 'error', "Le message reçu n'est pas un message BLE: ". json_encode($message));
+*/
     }
   }
 
@@ -484,16 +513,19 @@ class blescanner extends eqLogic {
     foreach ($message as $key => $content) {
 	$config = $content['config'];
 	if (is_array($config))
-		self::handleAttrDiscovery($key, $type, $config);
+		self::handleAttrDiscovery($type, $config);
     }
   }
 
   // manage device uid=xxxxx-uptime type=switch config = {}
-  public static function handleAttrDiscovery($uid, $type, $config) {
+  public static function handleAttrDiscovery($type, $config) {
     $dev = $config['device'];
     // log::add(__CLASS__, 'debug', '[' . __FUNCTION__ . '] name=' . $dev['name'].' mf=' . $dev['mf']);
     if (is_array($dev)) {
-	// log::add(__CLASS__, 'debug', '['. __FUNCTION__ .'] uid: '. $uid. ' name: ' . $config['name'] . ' type: '. $type .' for device: ' . $dev['name']);
+	$uid = $config['uniq_id'];
+	$uid = str_replace('_', '', $uid);
+	$cname = str_replace($dev['mdl'].'-','',$config['name']);
+	// log::add(__CLASS__, 'debug', '['. __FUNCTION__ .'] uid: '. $uid. ' name: ' . $cname . ' type: '. $type .' for device: ' . $dev['name']);
 	if ($dev['mf'] == 'OMG_community') {
    		$aLogic = eqLogic::byLogicalId($dev['name'], __CLASS__);
 		if ((is_object($aLogic)) && ($aLogic->getConfiguration('manufacturer') == 'Unknown')) {
@@ -502,21 +534,17 @@ class blescanner extends eqLogic {
 		}
    		if (!is_object($aLogic))
 			$aLogic = self::createOMGAntenna($dev);
-		$uid = $config['uniq_id'];
-		// $uid = preg_replace('/_/', '', $uid);
-		$uid = str_replace('_', '', $uid);
-		// log::add(__CLASS__, 'debug', '>>> UID modifié: ' . $uid);
 
 		$cmd = $aLogic->createInfoCmd($uid, $type, $config);
 		if ($type == 'button')
-			$aLogic->createActionCmd($uid.'-button', $config['name'], $type, $config['cmd_t'], $config['pl_prs']);
+			$aLogic->createActionCmd($uid.'-button', $cname, $type, $config['cmd_t'], $config['pl_prs']);
 		else if ($type == 'update')
-			$aLogic->createActionCmd($uid, $config['name'], $type, $config['cmd_t'], $config['payload_install']);
+			$aLogic->createActionCmd($uid, $cname, $type, $config['cmd_t'], $config['payload_install']);
                	else if ($type == 'number')
-			$aLogic->createActionCmd($uid.'-set', ($config['name']).' Set', $type, $config['cmd_t'], $config['cmd_tpl'], $cmd);
+			$aLogic->createActionCmd($uid.'-set', $cname .' Set', $type, $config['cmd_t'], $config['cmd_tpl'], $cmd);
 		else if ($type == 'switch') {
-			$aLogic->createActionCmd($uid.'-on', ($config['name']).' On', $type, $config['cmd_t'], $config['pl_on'], $cmd);
-			$aLogic->createActionCmd($uid.'-off', ($config['name']).' Off', $type, $config['cmd_t'], $config['pl_off'], $cmd);
+			$aLogic->createActionCmd($uid.'-on', $cname .' On', $type, $config['cmd_t'], $config['pl_on'], $cmd);
+			$aLogic->createActionCmd($uid.'-off', $cname .' Off', $type, $config['cmd_t'], $config['pl_off'], $cmd);
 		}
    	} else if (is_array($dev['ids'])) {
 			$did = $dev['ids'][0];
@@ -528,22 +556,33 @@ class blescanner extends eqLogic {
 			$unknownDevices = cache::byKey('blescanner::unknown_devices')->getValue();
 			$device = $unknownDevices[$did];
 			if (! is_array($device)) {
-				log::add(__CLASS__, 'debug', '>> nouveau device découvrable inconnu: '. $did . ' name: '. $config['name']);
+				log::add(__CLASS__, 'debug', '[' . __FUNCTION__ . '] nouveau device découvrable inconnu: '. $did . ' name: '. $dev['name']);
 				$device = array();
+				$device['id'] = $did;
 				$device['present'] = false;
 			}
 			if ((! isset($device['discoverable'])) || (! $device['discoverable'])) {
-				unset ($device['other']);
+				//unset ($device['other']);
 				$device['manufacturer'] = $dev['mf'];
 				$device['model'] = $dev['mdl'];
 				$device['name'] = $dev['name'];
 				$device['discoverable'] = true;
 			}
+			if (! isset($device['pictureId']))
+				$device['pictureId'] = md5($dev['mdl']);
+
+			if (! isset($device['other']))
+				$device['other'] = array();
+
+			$t = isset($config['dev_cla']) ? $config['dev_cla'] : $type;
+			$device['other'][$cname] = $t;
 			unset($config['device']);
 			$config['type'] = $type;
 			$device[$uid] = $config;
 			$unknownDevices[$did] = $device;
 			cache::set('blescanner::unknown_devices',$unknownDevices);
+		     // log::add(__CLASS__, 'debug', '******* NOUVEAU DEVICE: ' . json_encode($device));
+
 	}
     }
   }
@@ -619,7 +658,6 @@ class blescanner extends eqLogic {
 	return $cmd;
 
     $cmd = $this->newCmd ($uid, $name, $topic, $payload, 'other');
-//  log::add(__CLASS__, 'debug', '['. __FUNCTION__ . '] uid=' . $uid . ': ' . $payload);
     if (isset($info))
 	$cmd->setValue($info->getId());
 
@@ -642,7 +680,6 @@ class blescanner extends eqLogic {
     $aLogic->setLogicalId($dev['name']);
     $aLogic->setName($dev['name']);
     $aLogic->setEqType_name(__CLASS__);
-//	$aLogic->setObject_id(19); // temp
     $aLogic->setIsEnable(1);
     $aLogic->setIsVisible(1);
     $aLogic->setConfiguration('antennaUid', $id);
@@ -660,7 +697,6 @@ class blescanner extends eqLogic {
     foreach ($dList as $d)
 	$d->createAntennaPresence($aLogic);
 
-    log::add(__CLASS__, 'debug', '*** FIN DE CREATION createOMGAntenna id: '. $id . ' name: ' . $dev['name']);
     event::add('blescanner::newEqLogic', '');
     return $aLogic;
   }
@@ -671,7 +707,6 @@ class blescanner extends eqLogic {
     return $cmd;
   }
 
-  // $key est la clé du topic. utile ou pas???
   public function newCmd($uid, $name, $topic, $key, $stype, $class=null, $unit=null)
   {
     // log::add(__CLASS__, 'info', '['. __FUNCTION__ . '] uid: '. $uid .' name: ' . $name . ' type: ' . $stype . ' class: ' . $class . ' unit: ' . $unit);
@@ -744,6 +779,7 @@ class blescanner extends eqLogic {
 		else
 			return 'string';
 	case 'binary_sensor':
+	case 'device_tracker':
 	case 'switch': return 'binary';
 	case 'button':
 	case 'update': return 'other'; // action
@@ -789,7 +825,7 @@ class blescanner extends eqLogic {
     }
   }
 
-  public static function handleMqttTopic($rootTopic, $msg) {
+  public static function handleTopic($rootTopic, $msg) {
 //  log::add(__CLASS__, 'debug', '[' . __FUNCTION__ . '] topic: ' . $rootTopic . ' msg=' . json_encode($msg));
     $disco=cache::byKey('blescanner::disco')->getValue();
     foreach ($msg as $key => $value) {
@@ -811,34 +847,6 @@ class blescanner extends eqLogic {
 	if (isset($val) && is_object($eqLogic))
 		$eqLogic->updateAntennaConfig($topic, $val);
     }
-  }
-
-  public function checkAntenna () {
-    $mqttInfos = mqtt2::getFormatedInfos();
-    $host = $mqttInfos['ip'];
-    $port = $mqttInfos['port'];
-    $user = $mqttInfos['user'];
-    $passwd = $mqttInfos['password'];
-    $cmdUid = $this->getConfiguration('antennaUid') . '-connectivity';
-    log::add(__CLASS__, 'debug', '[' .__FUNCTION__ . '] antenna: ' . $this->getLogicalId() . ' LWT command: ' . $cmdUid);
-    $cmd = $this->getCmd('info', $cmdUid);
-
-    if (! is_object($cmd))
-	throw new Exception ($this->getName() . ': commande non trouvée: ' . $cmdUid);
-    // log::add(__CLASS__, 'debug', ' LWT command name: ' . $cmd->getName());
-
-    $topic = $cmd->getConfiguration('topic');
-    //log::add(__CLASS__, 'debug', __FUNCTION__ . ' LWT topic: ' . $topic);
-
-    // workaround
-    $cmdline = ' mosquitto_sub -W 1 -C 1 -L mqtt://' . $user . ':' . $passwd . '@'
-	. $host . ':' . $port . '/' . $topic; //. '/' . $this->getLogicalId() . '/+';
-    //log::add(__CLASS__, 'debug', '>>> checkAntenna command: '. $cmdline);
-    $rc = shell_exec(system::getCmdSudo() . $cmdline);
-    log::add(__CLASS__, 'debug', ' >>> antenna '. $this->getLogicalId() . ' status: ' . $rc);
-    // $b = (strpos($rc,'online')!== false)? true : false;
-    // $this->checkAndUpdateCmd($cmdUid, $b);
-    $this->checkAndUpdateCmd($cmdUid, trim($rc));
   }
 
   public static function createUnknownAntenna($key,$topic)
@@ -886,87 +894,80 @@ class blescanner extends eqLogic {
     $rc['log'] = __CLASS__;
     $rc['state'] = 'nok';
     $rc['launchable'] = 'ok';
-    if (config::byKey('deamonStatus', __CLASS__,'') == "running")
-	$rc['state'] = 'ok';
-
-    if (!class_exists('mqtt2')) {
-	$rc['launchablemessage'] = __("Le plugin MQTT Manager n'est pas installé", __FILE__);
-	$rc['launchable'] = 'nok';
-    }
-
+/*
     if ($rc['launchable'] == 'nok')
 	log::add(__CLASS__, 'debug', '['.__FUNCTION__ . '] msg: ' . $rc['launchablemessage']);
+*/
+    $deamon = self::getDeamon();
+    if (($rc['launchable'] == 'ok') && (!is_null($deamon)) && ($deamon->isRunning()))
+	$rc['state'] = 'ok';
 
+    //log::add(__CLASS__, 'debug', '['.__FUNCTION__ . '] state= ' . $rc['state']);
     return $rc;
   }
 
   public static function deamon_start() {
-    self::deamon_stop();
+    // self::deamon_stop();
     $rc = self::deamon_info();
     if ($rc['launchable'] != 'ok')
 	throw new Exception(__('Veuillez vérifier la configuration', __FILE__), 'unableStartDeamon');
 
+    log::add(__CLASS__, 'info', '*** Starting blescanner deamon ***');
     if (! self::initSettings())
 	return false;
-
-    $antennas = self::getDevices('Antenna');
-    foreach ($antennas as $a)
- 	if ($a->getIsEnable())
-		$a->checkAntenna();
-
-    self::startDisco();
-    $topics = self::getRootTopics();
-    log::add(__CLASS__, 'info', 'root topics: ' . json_encode($topics));
-
-    foreach ($topics as $t) {
-	log::add(__CLASS__, 'debug', 'ajout du topic: ' . $t);
-	mqtt2::addPluginTopic(__CLASS__,$t);
-    }
-
-    $deamon_info = self::deamon_info();
-    if ($deamon_info['launchable'] != 'ok') {
-	throw new Exception(__('Veuillez vérifier la configuration', __FILE__));
-    }
-
-    log::add(__CLASS__, 'info', 'Lancement démon');
+    $mqttSettings = config::byKey('broker',__CLASS__);
+    $deamon = self::getDeamon();
+    $deamon->start ($mqttSettings);
     $i = 0;
-    config::save('deamonStatus', 'running' ,__CLASS__);
-
     while ($i < 3) {
-	$deamon_info = self::deamon_info();
-	if ($deamon_info['state'] == 'ok')
-	    break;
+	$rc = self::deamon_info();
+        if ($rc['state'] == 'ok')
+	   break;
 	sleep(1);
 	$i++;
     }
-    if ($i >= 3) {
-	log::add(__CLASS__, 'error', __('Impossible de lancer le démon, vérifiez la log', __FILE__), 'unableStartDeamon');
+    if ($i >=3) {
+	log::add(__CLASS__, 'error', 'Unable to start blescanner deamon', 'unableStartDeamon');
 	return false;
     }
+    $topics = self::getRootTopics();
+    log::add(__CLASS__, 'info', 'root topics: ' . json_encode($topics));
+    foreach ($topics as $t) {
+    //    log::add(__CLASS__, 'debug', 'ajout du topic: ' . $t);
+	$deamon->publish('addTopic',$t);
+    }
+    self::startDisco();
+
     message::removeAll(__CLASS__, 'unableStartDeamon');
-    log::add(__CLASS__, 'info', 'Démon blescanner lancé');
+    log::add(__CLASS__, 'info', '*** blescanner deamon started ***');
     return true;
   }
 
 
   public static function deamon_stop() {
-    log::add(__CLASS__, 'info', 'Arrêt démon');
-    $topics = self::getRootTopics();
-    foreach ($topics as $t) {
-	log::add(__CLASS__, 'debug', 'suppression du topic: ' . $t);
-	mqtt2::removePluginTopic($t);
-    }
-    mqtt2::removePluginTopic(self::getDiscoTopic());
     $antennas = self::getDevices('Antenna');
     foreach ($antennas as $a) {
 	$cmdUid = $a->getConfiguration('antennaUid') . '-connectivity';
 	$a->checkAndUpdateCmd($cmdUid, 'offline');
     }
-    config::save('deamonStatus', 'stopped' ,__CLASS__);
     self::cleanKnown(0);
     cache::delete('blescanner::unknown_devices');
     cache::set('blescanner::disco', 0);
-    sleep(1);
+
+    $rc = self::deamon_info();
+    if ($rc['state'] != 'ok')
+        return;
+
+    log::add(__CLASS__, 'info', '*** Stopping blescanner deamon ***');
+    $deamon = self::getDeamon();
+    $deamon->publish('removeTopic',self::getDiscoTopic());
+    $topics = self::getRootTopics();
+    foreach ($topics as $t) {
+//	log::add(__CLASS__, 'debug', 'suppression du topic: ' . $t);
+	$deamon->publish('removeTopic',$t);
+    }
+    $deamon->stop();
+    log::add(__CLASS__, 'info', '*** blescanner deamon stopped ***');
   }
 
   public static function getAntennaList() {
@@ -1010,7 +1011,6 @@ class blescannerCmd extends cmd {
 	if ($this->getType() == 'action') {
 		$payload = array();
 		$str= '{' . $this->getConfiguration('command') . '}';
-		// log::add(__CLASS__, 'debug', 'payload brut=' . $str);
 		$payload = json_decode($str,true);
 		if (! $payload)
 			throw new Exception('Commande ' . $this->getName() .': payload incorrect');
@@ -1032,12 +1032,12 @@ class blescannerCmd extends cmd {
 
   public function evalPayload($val=null) {
     $payload = trim($this->getConfiguration('payload'),"'");
-    log::add('blescanner', 'debug', '[' . __FUNCTION__ . '] payload initial: '  .  $payload . ' value: '. $val);
+//  log::add('blescanner', 'debug', '[' . __FUNCTION__ . '] payload initial: '  .  $payload . ' value: '. $val);
     if (preg_match('/\{\{(.*)\}\}/', $payload, $expr)) {
 	$expr2 = str_replace('value', $val, $expr[1]);
 	$result = jeedom::evaluateExpression($expr2);
 	$payload = str_replace($expr[0], $result, $payload);
-	log::add('blescanner', 'debug', 'payload final: ' . $payload);
+//	log::add('blescanner', 'debug', 'payload final: ' . $payload);
     }
     return $payload;
   }
@@ -1061,8 +1061,8 @@ class blescannerCmd extends cmd {
 		$payload = $this->evalPayload();
     }
 
-    log::add('blescanner', 'debug', '>>> topic: ' . $topic . ' payload: ' . $payload);
-    mqtt2::publish($topic, $payload);
+    log::add('blescanner', 'debug', '[' . __FUNCTION__ . '] topic: ' . $topic . ' payload: ' . $payload);
+    blescanner::getDeamon()->publish('publish', $topic, $payload);
   }
 }
 

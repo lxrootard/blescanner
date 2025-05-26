@@ -25,14 +25,27 @@
 
 <p>Le plugin requiert le <a href="https://doc.jeedom.com/fr_FR/plugins/programming/mqtt2">#plugin-mqtt2</a>.</p>
 
-<h4>Paramètres:</h4>
+<h4>Broker MQTT</h4>
+
+<ul>
+<li>Adresse du broker: défaut <code>mqtt://localhost:1883</code></li>
+<li>Authentification: utilisateur et mot de passe</li>
+<li>Topic de découverte: topic Home Assistant. défaut: <code>homeassistant</code></li>
+<li>Topics racines des équipements: topics surveillés par le plugin (au moins un). </li>
+</ul>
+
+<h4>Devices et Antennes</h4>
 
 <ul>
 <li>Création automatique: création automatique des devices BLE (désactivé par défaut)</li>
 <li>Durée d'auto-découverte: délai de détection des antennes et des devices (en minutes)</li>
 <li>Délai d'absence: délai après lequel les devices inactifs seront supprimés (en minutes, 0 pour les garder indéfiniment)</li>
-<li>Topic de découverte: topic d'auto-découverte Home Assistant. défaut: <code>homeassistant</code></li>
-<li>Topics racines des équipements: topics surveillés par le plugin (au moins un). </li>
+</ul>
+
+<h4>Système</h4>
+
+<ul>
+<li>Port du deamon: défault <code>55036</code>, ne pas changer sauf conflit</li>
 </ul>
 
 <p><img src="../images/blescanner1.png" alt="config" title="" /></p>
@@ -46,8 +59,9 @@
 
 <h3>Liste des devices inconnus</h3>
 
-<p>Affiche tous les devices non gérés. La colonne <code>Découvrable</code> permet de déterminer si les devices supportent l'auto-découverte ou pas. Il est possible de filtrer les lignes du tableau par clic sur les entêtes de colonnes.
-<br>Le bouton <code>Ajouter</code> permet d'ajouter les devices découverts un par un. Si le device est auto-découvrable ses commandes seront automatiquement créées, sinon seuls la présence et le RSSI seront disponibles.</p>
+<p>Affiche tous les devices non gérés. La colonne <code>Découvrable</code> permet de déterminer si les devices supportent l'auto-découverte ou pas. L'option <code>afficher les devices absents</code> permet de voir les devices auto-découverts qui ne sont pas joignables. Il est possible de filtrer les lignes du tableau par clic sur les entêtes de colonnes.</p>
+
+<p><br>Le bouton <code>Ajouter</code> permet d'ajouter les devices découverts un par un. Si le device est auto-découvrable ses commandes seront automatiquement créées, sinon seuls la présence et le RSSI seront disponibles.</p>
 
 <p><img src="../images/blescanner5.png" alt="list2" title="" /></p>
 

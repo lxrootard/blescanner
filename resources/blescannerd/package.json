@@ -1,0 +1,11 @@
+{
+    "name": "blescanner",
+    "version": "1.0.0",
+    "description": "blescanner deamon",
+    "main": "blescannerd.js",
+    "dependencies": {
+	"mqtt": "^5.13.0",
+	"axios": "^1.9.0",
+	"express": "^5.0.1"
+    }
+  }

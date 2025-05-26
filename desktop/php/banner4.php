@@ -14,15 +14,21 @@
 * You should have received a copy of the GNU General Public License
 * along with Plugin blescanner for jeedom. If not, see <http://www.gnu.org/licenses/>.
 */
-
 if (!isConnect('admin')) {
 	throw new Exception('401 - {{Accès non autorisé}}');
 }
 ?>
-
-<div style="float: right">
-      <label id='animate_text'>{{Pause}}</label>
-      <a class="btn btn-info pauseGraph graphBtn" data-action="pause">
-         <i class="fas fa-pause" id='animate_icon' style="width:15px"></i>
-     </a>
+<div class="display_options">
+   <span>
+        <label class="graphLabel" for="display_away">{{Afficher les devices absents}}
+                <sup><i class="fas fa-question-circle tooltips"
+                        title="{{Afficher les devices auto-découverts absents ou non détectés}}"></i></sup>
+        </label>
+	<?php
+	$away = cache::byKey('blescanner::display_away')->getValue();
+//	log::add('blescanner', 'debug',  '> list1: display away devices: $$' . $away . '$$');
+	$checked = ($away == 'on')? 'checked': '';
+        echo '<input type="checkbox" id="display_away" ' . $checked . ' onclick="toggleAway()"/>';
+	?>
+   </span>
 </div>

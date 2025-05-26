@@ -2,16 +2,16 @@
   "pre-install": {
   },
   "apt": {
-    "mosquitto-clients" : {}
+    "nodejs" : {}
   },
   "pip3": {
   },
   "npm": {
+    "plugins/blescanner/resources/blescannerd"  : {}
   },
   "yarn": {
   },
   "plugin": {
-    "mqtt2" : {}
   },
   "post-install": {
   }

@@ -21,6 +21,7 @@ if (!isConnect('admin')) {
 $plugin = plugin::byId('blescanner');
 $devices = cache::byKey('blescanner::unknown_devices')->getValue();
 $antennas = eqLogic::byType('blescanner');
+$away = cache::byKey('blescanner::display_away')->getValue();
 ?>
 <style type="text/css">
         html, body, svg {
@@ -48,6 +49,10 @@ $antennas = eqLogic::byType('blescanner');
         <label>{{Rafraîchir }}&nbsp;</label>
         <a class="btn btn-success refreshBtn" data-action="refresh"><i class="fas fa-sync"></i></a>
 </div>
+
+<?php
+include_file('desktop', 'banner4', 'php', 'blescanner');
+?>
 <div class="table-responsive">
   <table class="table table-condensed tablesorter" id="table_list2">
 	<thead>
@@ -69,8 +74,8 @@ uasort($devices, function($a, $b) {
 });
 
 foreach ($devices as $uid => $dev) {
-	// log::add('blescanner', 'debug', 'device: ' . $uid . ' value: ' .json_encode($dev));
-	if (! $dev['present'])
+//	log::add('blescanner', 'debug', 'device: ' . $uid . ' value: ' . json_encode($dev));
+	if (($away == 'off') && (! $dev['present']))
 		continue;
 	echo '<tr>';
 	echo '<td><span class="label label-info">' . $dev['id'] . '</span></td>';

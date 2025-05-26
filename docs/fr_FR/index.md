@@ -22,13 +22,20 @@ Ce plugin permet de découvrir/gérer les devices bluetooth et les antennes BLE 
 
 Le plugin requiert le [#plugin-mqtt2](https://doc.jeedom.com/fr_FR/plugins/programming/mqtt2).
 
-#### Paramètres:
+#### Broker MQTT
+- Adresse du broker: défaut `mqtt://localhost:1883`
+- Authentification: utilisateur et mot de passe
+- Topic de découverte: topic Home Assistant. défaut: `homeassistant`
+- Topics racines des équipements: topics surveillés par le plugin (au moins un). 
 
+#### Devices et Antennes
 - Création automatique: création automatique des devices BLE (désactivé par défaut)
 - Durée d'auto-découverte: délai de détection des antennes et des devices (en minutes)
 - Délai d'absence: délai après lequel les devices inactifs seront supprimés (en minutes, 0 pour les garder indéfiniment)
-- Topic de découverte: topic d'auto-découverte Home Assistant. défaut: `homeassistant`
-- Topics racines des équipements: topics surveillés par le plugin (au moins un). 
+
+#### Système
+
+- Port du deamon: défault `55036`, ne pas changer sauf conflit
 
 ![config](../images/blescanner1.png)
 
@@ -41,7 +48,8 @@ L'auto-découverte est active au démarrage, les antennes détectées sont ajout
 
 ### Liste des devices inconnus
 
-Affiche tous les devices non gérés. La colonne `Découvrable` permet de déterminer si les devices supportent l'auto-découverte ou pas. Il est possible de filtrer les lignes du tableau par clic sur les entêtes de colonnes.
+Affiche tous les devices non gérés. La colonne `Découvrable` permet de déterminer si les devices supportent l'auto-découverte ou pas. L'option `afficher les devices absents` permet de voir les devices auto-découverts qui ne sont pas joignables. Il est possible de filtrer les lignes du tableau par clic sur les entêtes de colonnes.
+
 <br>Le bouton `Ajouter` permet d'ajouter les devices découverts un par un. Si le device est auto-découvrable ses commandes seront automatiquement créées, sinon seuls la présence et le RSSI seront disponibles.
 
 ![list2](../images/blescanner5.png)

@@ -22,13 +22,21 @@ This plugin discovers and manages Bluetooth devices and [OMG ESP32](https://docs
 
 This plugin requires the [#plugin-mqtt2](https://doc.jeedom.com/fr_FR/plugins/programming/mqtt2).
 
-#### Parameters:
+####  MQTT Broker
+- Broker URL: default `mqtt://localhost:1883`
+- Authentication: username and password
+- Discovery topic: Home Assistant topic. Default: `homeassistant`
+- Devices root topics: topics monitored by the plugin (at least one required).
+
+#### Devices and Antennas
 
 - Auto creation: automatically create BLE devices (disabled by default)
 - Auto-discovery duration: detection delay for antennas and devices (in minutes)
 - Missing timeout: time after which inactive devices will be deleted (in minutes, 0 to keep them indefinitely)
-- Discovery topic: Home Assistant auto-discovery topic. Default: `homeassistant`
-- Devices root topics: topics monitored by the plugin (at least one required).
+
+#### System
+
+- Deamon port: default `55036`, do not change until you have a conflict
 
 ![config](../images/blescanner1.png)
 
@@ -41,7 +49,7 @@ If auto-creation is checked in the configuration page, devices will be automatic
 
 ### Unknown Devices List
 
-Displays all unmanaged devices. The `Discoverable` column indicates whether the devices support auto-discovery. You can filter table rows by clicking on column headers.  
+Displays all unmanaged devices. The `Discoverable` column indicates whether the devices support auto-discovery. The `display absent devices` option allows to see auto-detected devices that are not reachable. You can also filter table rows by clicking on column headers.  
 The `Add` button allows adding discovered devices one by one. If the device supports auto-discovery, its commands will be automatically created; otherwise only presence and RSSI will be available.
 
 ![list2](../images/blescanner5.png)
