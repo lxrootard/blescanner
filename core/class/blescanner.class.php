@@ -29,31 +29,30 @@ class blescanner extends eqLogic {
     return self::$_deamon;
   }
 
-  public static function dependancy_end() {
-    log::add(__CLASS__, 'info', "Fin de configuration des dépendances");
-    if (config::byKey('ble_root_topics', __CLASS__) == null)
+  public static function initConfig() {
+    log::add(__CLASS__, 'debug', __FUNCTION__);
+    if (empty(config::byKey('ble_root_topics', __CLASS__)))
 	config::save('ble_root_topics','theengs',__CLASS__);
 
-    if (config::byKey('disco_topic',__CLASS__) == null)
+    if (empty(config::byKey('disco_topic',__CLASS__)))
 	config::save('disco_topic', 'homeassistant',__CLASS__);
 
-    if (config::byKey('devices_timeout',__CLASS__) == null)
+    if (empty(config::byKey('devices_timeout',__CLASS__)))
 	config::save('devices_timeout',2,__CLASS__);
 
-    if (config::byKey('disco_duration',__CLASS__) == null)
+    if (empty(config::byKey('disco_duration',__CLASS__)))
 	config::save('disco_duration',5,__CLASS__);
 
-    if (config::byKey('auto_create',__CLASS__) == null)
+    if (empty(config::byKey('auto_create',__CLASS__)))
 	config::save('auto_create',false,__CLASS__);
 
-    $mqttSettings = config::byKey('broker',__CLASS__);
-    if ($mqttSettings['mqtt_port'] == '')
-	$mqttSettings['mqtt_port'] = 1883;
-    if ($mqttSettings['mqtt_host'] == '')
-	$mqttSettings['mqtt_host'] = 'localhost';
-    if ($mqttSettings['deamon_port'] == '')
-	$mqttSettings['deamon_port'] = 55036;
-    config::save('broker',$mqttSettings);
+    $mqttSettings = config::byKey('broker',__CLASS__,array());
+    if (empty($mqttSettings)) {
+	$mqttSettings['port'] = '1883';
+	$mqttSettings['host'] = 'localhost';
+	$mqttSettings['socket_port'] = '55036';
+	config::save('broker',json_encode($mqttSettings), __CLASS__);
+    }
   }
 
   public static function getDiscoTopic() {
@@ -167,47 +166,30 @@ class blescanner extends eqLogic {
   public static function initSettings() {
     $t1 = intval(config::byKey('disco_duration',__CLASS__));
     log::add(__CLASS__, 'info', 'timeout auto-découverte: ' . $t1 . ' mins');
-    if (! is_int($t1) || ($t1 < 1)) {
-	self::send_alert("La durée d'auto-découverte doit être un nombre entier de minutes", __FILE__);
-	return false;
-    }
+    if (! is_int($t1) || ($t1 < 1))
+	throw new Exception("La durée d'auto-découverte doit être un nombre entier de minutes");
     $t2 =  intval(config::byKey('devices_timeout',__CLASS__));
     log::add(__CLASS__, 'info', 'timeout devices: ' . $t2 . ' mins');
-    if (! is_int($t2) || $t2 <0) {
-	self::send_alert("Le délai d'absence doit être un nombre entier de minutes", __FILE__);
-	return false;
-    }
-    if (config::byKey('ble_root_topics', __CLASS__) == null) {
-	self::send_alert("Ajoutez au moins un topic à surveiller", __FILE__);
-	return false;
-    }
+    if (! is_int($t2) || $t2 <0)
+	throw new Exception("Le délai d'absence doit être un nombre entier de minutes");
+    if (config::byKey('ble_root_topics', __CLASS__) == null)
+	throw new Exception("Ajoutez au moins un topic à surveiller");
     $mqttSettings = config::byKey('broker',__CLASS__);
-    // log::add(__CLASS__, 'debug', 'MQTT settings:' . json_encode($mqttSettings));
-    if ($mqttSettings['mqtt_host'] == '') {
-	self::send_alert("L'adresse du broker MQTT doit être renseignée", __FILE__);
-	return false;
-    }
-    if ($mqttSettings['mqtt_port'] == '') {
-	self::send_alert("Le port du broker MQTT doit être renseigné", __FILE__);
-	return false;
-    }
-    if ($mqttSettings['mqtt_user'] == '') {
-	self::send_alert("Le login du broker MQTT doit être renseigné", __FILE__);
-	return false;
-    }
-    if ($mqttSettings['mqtt_passwd'] == '') {
-	self::send_alert("Le mot de passe du broker MQTT doit être renseigné", __FILE__);
-	return false;
-    }
-    if ($mqttSettings['deamon_port'] == '') {
-	self::send_alert("Le port du callback Jeedom doit être renseigné", __FILE__);
-	return false;
-    }
+    //log::add(__CLASS__, 'debug', 'MQTT settings:' . json_encode($mqttSettings));
+    if ($mqttSettings['host'] == '')
+	throw new Exception("L'adresse du broker MQTT doit être renseignée");
+    if ($mqttSettings['port'] == '')
+	throw new Exception("Le port du broker MQTT doit être renseigné");
+    if ($mqttSettings['user'] == '')
+	throw new Exception("Le login du broker MQTT doit être renseigné");
+    if ($mqttSettings['passwd'] == '')
+	throw new Exception("Le mot de passe du broker MQTT doit être renseigné");
+    if ($mqttSettings['socket_port'] == '')
+	throw new Exception("Le port du callback Jeedom doit être renseigné");
     cache::set('blescanner::unknown_devices',array());
     cache::set('blescanner::display_mode','Attenuation');
     cache::set('blescanner::display_away','off');
     cache::set('blescanner::disco', 0);
-    return true;
   }
 
   public static function startDisco() {
@@ -220,7 +202,7 @@ class blescanner extends eqLogic {
     log::add(__CLASS__, 'info', $msg);
     $topic = self::getDiscoTopic();
     log::add(__CLASS__, 'info', 'topic de discovery: ' . $topic);
-    self::getDeamon()->publish ('addTopic',$topic);
+    self::getDeamon()->send ('addTopic',$topic);
 
     event::add('blescanner::discovery', array('message' =>  __($msg, __FILE__), 'type' => 'start'));
     cache::set('blescanner::disco',strtotime('now') + ($timeout * 60));
@@ -233,7 +215,7 @@ class blescanner extends eqLogic {
 	return;
     $msg = "*** Fin d'auto-découverte ***";
     log::add(__CLASS__, 'info', $msg);
-    self::getDeamon()->publish ('removeTopic',self::getDiscoTopic());
+    self::getDeamon()->send ('removeTopic',self::getDiscoTopic());
 
     if (config::byKey('auto_create',__CLASS__)) {
 	$devs = cache::byKey('blescanner::unknown_devices')->getValue();
@@ -254,9 +236,10 @@ class blescanner extends eqLogic {
     foreach ($message as $did => $value) {
 	if (is_array($value) && isset($value["id"])) {
 		$dLogic = self::byLogicalId($did,__CLASS__);
-		if (is_object($dLogic) and $dLogic->getIsEnable())
-			$dLogic->updateDevice($this,$value);
-		else
+		if (is_object($dLogic)) {
+			if ($dLogic->getIsEnable())
+				$dLogic->updateDevice($this,$value);
+		} else
 			$this->updateUnknownDevice($did,$value);
 	}
     }
@@ -815,7 +798,6 @@ class blescanner extends eqLogic {
     $this->updateAntennaConfig($topic, $msg);
   }
 
-// workaround jamais appelée au demarrage... RETAIN manquant
   public static function updateLWT ($key, $alive) {
     $eqLogic = self::byLogicalId($key, __CLASS__);
     if (is_object($eqLogic)) {
@@ -886,7 +868,6 @@ class blescanner extends eqLogic {
     log::add(__CLASS__, 'error', __($msg, __FILE__), 'unableStartDeamon');
     event::add('jeedom::alert', array('level' => 'warning', 'page' => 'blescanner',
 	'message' => $msg));
-    // throw new Exception(__($msg, __FILE__));
   }
 
   public static function deamon_info() {
@@ -894,53 +875,55 @@ class blescanner extends eqLogic {
     $rc['log'] = __CLASS__;
     $rc['state'] = 'nok';
     $rc['launchable'] = 'ok';
-/*
-    if ($rc['launchable'] == 'nok')
-	log::add(__CLASS__, 'debug', '['.__FUNCTION__ . '] msg: ' . $rc['launchablemessage']);
-*/
     $deamon = self::getDeamon();
     if (($rc['launchable'] == 'ok') && (!is_null($deamon)) && ($deamon->isRunning()))
 	$rc['state'] = 'ok';
 
-    //log::add(__CLASS__, 'debug', '['.__FUNCTION__ . '] state= ' . $rc['state']);
+    // log::add(__CLASS__, 'debug', '['.__FUNCTION__ . '] state= ' . $rc['state']);
     return $rc;
   }
 
   public static function deamon_start() {
-    // self::deamon_stop();
-    $rc = self::deamon_info();
-    if ($rc['launchable'] != 'ok')
-	throw new Exception(__('Veuillez vérifier la configuration', __FILE__), 'unableStartDeamon');
-
-    log::add(__CLASS__, 'info', '*** Starting blescanner deamon ***');
-    if (! self::initSettings())
-	return false;
-    $mqttSettings = config::byKey('broker',__CLASS__);
-    $deamon = self::getDeamon();
-    $deamon->start ($mqttSettings);
-    $i = 0;
-    while ($i < 3) {
+    self::deamon_stop();
+    try {
 	$rc = self::deamon_info();
-        if ($rc['state'] == 'ok')
-	   break;
-	sleep(1);
-	$i++;
-    }
-    if ($i >=3) {
-	log::add(__CLASS__, 'error', 'Unable to start blescanner deamon', 'unableStartDeamon');
+	if ($rc['launchable'] != 'ok')
+	   throw new Exception('Veuillez vérifier la configuration');
+
+	log::add(__CLASS__, 'info', '*** Starting blescanner deamon ***');
+	self::initSettings();
+	$mqttSettings = config::byKey('broker',__CLASS__);
+	$mqttSettings['cbclass'] = 'jeeblescanner';
+	config::save('broker', json_encode($mqttSettings), __CLASS__);
+	log::add(__CLASS__, 'debug', '[' . __FUNCTION__ . '] settings MQTT: ' . json_encode($mqttSettings));
+	$deamon = self::getDeamon();
+	$deamon->start ($mqttSettings);
+	sleep(3);
+	if (! ($deamon->isRunning()))
+	    throw new Exception('Démon MQTT non démarré ou mauvais paramétrage, vérifier les logs');
+	$i = 0;
+	while ($i < 3) {
+	   $rc = self::deamon_info();
+	   if ($rc['state'] == 'ok')
+		break;
+	   sleep(1);
+	   $i++;
+	}
+	if ($i >=3)
+	   throw new Exception('Impossible de démarrer le démon blescanner, consultez les logs');
+
+	$topics = self::getRootTopics();
+	log::add(__CLASS__, 'info', 'root topics: ' . json_encode($topics));
+	foreach ($topics as $t)
+	   $deamon->send('addTopic',$t);
+	self::startDisco();
+	log::add(__CLASS__, 'info', '*** blescanner deamon started ***');
+	//    message::removeAll(__CLASS__, 'unableStartDeamon');
+	return true;
+    }  catch (Exception $e) {
+	self::send_alert ($e->getMessage());
 	return false;
     }
-    $topics = self::getRootTopics();
-    log::add(__CLASS__, 'info', 'root topics: ' . json_encode($topics));
-    foreach ($topics as $t) {
-    //    log::add(__CLASS__, 'debug', 'ajout du topic: ' . $t);
-	$deamon->publish('addTopic',$t);
-    }
-    self::startDisco();
-
-    message::removeAll(__CLASS__, 'unableStartDeamon');
-    log::add(__CLASS__, 'info', '*** blescanner deamon started ***');
-    return true;
   }
 
 
@@ -960,11 +943,11 @@ class blescanner extends eqLogic {
 
     log::add(__CLASS__, 'info', '*** Stopping blescanner deamon ***');
     $deamon = self::getDeamon();
-    $deamon->publish('removeTopic',self::getDiscoTopic());
+    $deamon->send('removeTopic',self::getDiscoTopic());
     $topics = self::getRootTopics();
     foreach ($topics as $t) {
 //	log::add(__CLASS__, 'debug', 'suppression du topic: ' . $t);
-	$deamon->publish('removeTopic',$t);
+	$deamon->send('removeTopic',$t);
     }
     $deamon->stop();
     log::add(__CLASS__, 'info', '*** blescanner deamon stopped ***');
@@ -1062,7 +1045,7 @@ class blescannerCmd extends cmd {
     }
 
     log::add('blescanner', 'debug', '[' . __FUNCTION__ . '] topic: ' . $topic . ' payload: ' . $payload);
-    blescanner::getDeamon()->publish('publish', $topic, $payload);
+    blescanner::getDeamon()->send('publish', $topic, $payload);
   }
 }
 

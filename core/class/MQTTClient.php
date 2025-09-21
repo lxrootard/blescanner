@@ -27,7 +27,7 @@ class MQTTClient {
 
   public function stop() {
 //  log::add($this->_class, 'debug', 'stopping '. $this->_class .'d');
-    $pid_file = jeedom::getTmpFolder($this->_class) . '/deamon.pid';
+    $pid_file = jeedom::getTmpFolder($this->_class) . '/mqttDeamon.pid';
     if (file_exists($pid_file)) {
 	$pid = intval(trim(file_get_contents($pid_file)));
 	system::kill($pid);
@@ -45,7 +45,7 @@ class MQTTClient {
     cache::set($this->_class . '::settings', $mqttSettings);
 
     log::add($this->_class, 'debug', 'starting ' . $this->_class.'d with settings: ' . json_encode($mqttSettings));
-    $cbclass = '/core/php/jee' . $this->_class . '.php';
+    $cbclass = '/core/php/' . $mqttSettings['cbclass'] . '.php';
     $cbfile = realpath(dirname(__FILE__) .'/../..' . $cbclass);
     if (file_exists($cbfile))
 	$callback = '/plugins/' . $this->_class . $cbclass;
@@ -56,22 +56,22 @@ class MQTTClient {
     chdir($mqtt_dir);
     $cmd = system::getCmdSudo() . ' /usr/bin/node ' . $mqtt_dir . '/' . $this->_class . 'd.js';
     $cmd .= ' --loglevel ' . log::convertLogLevel(log::getLogLevel($this->_class));
-    $cmd .= ' --socketport '. $mqttSettings['deamon_port']; 
-    $cmd .= ' --mqtt_server mqtt://' . $mqttSettings['mqtt_host'] . ':' . $mqttSettings['mqtt_port'];
-    $cmd .= ' --username "'. $mqttSettings['mqtt_user'] .'"';
-    $cmd .= ' --password "' . $mqttSettings['mqtt_passwd'] .'"';
+    $cmd .= ' --socketport '. $mqttSettings['socket_port'];
+    $cmd .= ' --mqtt_server mqtt://' . $mqttSettings['host'] . ':' . $mqttSettings['port'];
+    $cmd .= ' --username "'. $mqttSettings['user'] .'"';
+    $cmd .= ' --password "' . $mqttSettings['passwd'] .'"';
     $cmd .= ' --callback ' . network::getNetworkAccess('internal', 'http:127.0.0.1:port:comp') . $callback;
     $cmd .= ' --apikey ' . jeedom::getApiKey($this->_class);
     $cmd .= ' --cycle 1';
-    $cmd .= ' --pid ' . jeedom::getTmpFolder($this->_class) . '/deamon.pid';
+    $cmd .= ' --pid ' . jeedom::getTmpFolder($this->_class) . '/mqttDeamon.pid';
     log::add($class, 'info',$this->_class . 'd started with command: ' . $cmd);
     exec($cmd . ' >> ' . log::getPathToLog($this->_class . 'd') . ' 2>&1 &');
   }
 
   public function isRunning () {
-    $pid_file = jeedom::getTmpFolder($this->_class) . '/deamon.pid';
+    $pid_file = jeedom::getTmpFolder($this->_class) . '/mqttDeamon.pid';
     $pid = trim(file_get_contents($pid_file));
-//  log::add($this->_class, 'debug', '[' . __FUNCTION__ . ']  pid= ' . $pid . ' pidfile=' . $pid_file);
+//    log::add($this->_class, 'debug', '[' . __FUNCTION__ . ']  pid=' . $pid . ' pidfile=' . $pid_file);
     if (file_exists($pid_file) && $pid) {
 	if (@posix_getsid((int) $pid))
 	    return true;
@@ -81,7 +81,10 @@ class MQTTClient {
     return false;
   }
 
-  public function publish ($action, $topic, $message = '') {
+  public function send ($action, $topic, $message = '') {
+    if (! is_string($message))
+	$message = json_encode($message);
+
     log::add($this->_class, 'debug', '[' . __FUNCTION__ . '] action: ' . $action. ' topic: '. $topic . ' message: ' . $message);
     $mqttSettings = cache::byKey($this->_class . '::settings')->getValue();
     if (! is_array($mqttSettings))
@@ -89,10 +92,11 @@ class MQTTClient {
 
     if (($action != 'addTopic') && ($action != 'removeTopic') && ($action != 'publish'))
 	throw new Exception(__FUNCTION__ .': unrecognized action: ' . $action);
-    $port = $mqttSettings['deamon_port'];
+
+    $port = $mqttSettings['socket_port'];
 //  log::add($this->_class, 'debug', '[' . __FUNCTION__ . '] port=' . $port);
 
-    $httpReq = new com_http('http://127.0.0.1:'. $port . '/' . $action . '?apikey=' . jeedom::getApiKey($this->_class));
+    $httpReq = new com_http('http://127.0.0.1:' . $port . '/' . $action . '?apikey=' . jeedom::getApiKey($this->_class));
     $httpReq->setHeader(array('Content-Type: application/json'));
     $httpReq->setPost(json_encode(array('topic' => $topic, 'message' => $message)));
     try {

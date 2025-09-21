@@ -63,10 +63,10 @@ if (!isConnect()) {
 	   </label>
 	   <div class="col-lg-6 input-group">
 	     <span class="input-group-addon">mqtt://</span>
-	     <input class="configKey form-control tooltips" data-l1key="broker" data-l2key="mqtt_host" value="localhost"
+	     <input class="configKey form-control tooltips" data-l1key="broker" data-l2key="host" placeholder="localhost"
 		title="{{Adresse IP du Broker. Défaut: localhost}}"/>
 	     <span class="input-group-addon">:</span>
-	     <input class="configKey form-control tooltips" data-l1key="broker" data-l2key="mqtt_port" placeholder="1883"
+	     <input class="configKey form-control tooltips" data-l1key="broker" data-l2key="port" placeholder="1883"
 		type="number" min="1" max="65535" title="{{Port  du Broker. Défaut: 1883}}"/>
 	   </div>
 	</div>
@@ -75,9 +75,9 @@ if (!isConnect()) {
 	     <sup><i class="fa fa-question-circle tooltips" title="{{Utilisateur et mot de passe}}"></i></sup>
 	   </label>
 	   <div class="col-lg-6 input-group">
-	     <input class="configKey form-control" data-l1key="broker" data-l2key="mqtt_user"/>
+	     <input class="configKey form-control" data-l1key="broker" data-l2key="user"  placeholder="utilisateur mqtt"/>
              <span class="input-group-addon">:</span>
-             <input class="configKey form-control" data-l1key="broker" data-l2key="mqtt_passwd" type="password"/>
+             <input class="configKey form-control" data-l1key="broker" data-l2key="passwd" type="password" placeholder="mot de passe mqtt"/>
 	   </div>
 	</div>
 	<div class="form-group">
@@ -85,7 +85,7 @@ if (!isConnect()) {
 	     <sup><i class="fas fa-question-circle tooltips" title="{{Topic d'auto-découverte. Défaut: homeassistant}}"></i></sup>
 	   </label>
 	   <div class="col-lg-3">
-	     <input class="configKey form-control" data-l1key="disco_topic" value="homeassistant"/>
+	     <input class="configKey form-control" data-l1key="disco_topic" placeholder="homeassistant"/>
 	   </div>
 	</div>
 	<div class="form-group">
@@ -141,12 +141,12 @@ if (!isConnect()) {
 
 	<legend><i class="fab fa-whmcs"></i>&nbsp;{{Système}}</legend>
 	<div class="form-group">
-	   <label class="col-lg-4 control-label">{{Port du deamon}}&nbsp;
+	   <label class="col-lg-4 control-label">{{Port socket MQTT}}&nbsp;
 	     <sup><i class="fas fa-exclamation-triangle tooltips warning-tooltip"
 		title="{{Port du deamon blescannerd. Ne pas modifier sauf en cas de conflit}}"></i></sup>
 	   </label>
 	   <div class="col-lg-2">
-	     <input class="configKey form-control" data-l1key="broker" data-l2key="deamon_port" type="number" min="1" max="65535" placeholder="55036"/>
+	     <input class="configKey form-control" data-l1key="broker" data-l2key="socket_port" type="number" min="1" max="65535" placeholder="55036"/>
 	   </div>
 	</div>
      </div>

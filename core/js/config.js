@@ -71,7 +71,3 @@ $('.configKey[data-l1key="ble_root_topics"]').change(function() {
 	initializeTopics();
     initDone = true;
 });
-
-$('body').off('blescanner::dependancy_end').on('blescanner::dependancy_end', function(_event, _options) {
-    window.location.reload();
-})

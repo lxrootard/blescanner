@@ -51,6 +51,8 @@ $eqLogics = blescanner::getDevices('Antenna');
 	<tbody>
 <?php
 foreach ($eqLogics as $eqLogic) {
+   if (! $eqLogic->getIsEnable())
+	continue;
    $image = '<img src="' . $eqLogic->getImage() . '" height="55" width="55" />';
    echo '<tr><td>' . $image . '</td><td><a href="' . $eqLogic->getLinkToConfiguration() . '" style="text-decoration: none;">' . $eqLogic->getHumanName(true) . '</a></td>';
    echo '<td><span class="label label-info" style="font-size : 1em; cursor : default;">' . $eqLogic->getId() . '</span></td>';

@@ -10,6 +10,8 @@
 - User Documentation [(fr)](docs/fr_FR/index.md)
 
 ## ChangeLog
+* v0.4 [lxrootard](https://github.com/lxrootard)
+<br> - bug fixes
 * v0.3 [lxrootard](https://github.com/lxrootard)
 <br> - added custom nodejs deamon to manage startup MQTT messages
 * v0.2 [lxrootard](https://github.com/lxrootard)

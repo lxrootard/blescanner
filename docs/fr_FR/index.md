@@ -7,6 +7,7 @@
 Ce plugin permet de découvrir/gérer les devices bluetooth et les antennes BLE [OMG ESP32](https://docs.openmqttgateway.com). Les antennes [Theengs](https://gateway.theengs.io) sont aussi reconnues mais pas leurs paramètres car elles ne supportent pas (encore?) l'auto-découverte Home Assistant. Il ne remplace pas le [#plugin-theengs](https://mips2648.github.io/jeedom-plugins-docs/tgw/fr_FR/) pour déployer et gérer les antennes Theengs.
 
 ## Documentation
+- [Prérequis](#prerequis)
 - [Configuration](#configuration)
 - [Auto-découverte](#auto-découverte)
 - [Liste des devices inconnus](#liste-des-devices-inconnus)
@@ -18,15 +19,28 @@ Ce plugin permet de découvrir/gérer les devices bluetooth et les antennes BLE 
 - [FAQ](#faq)
 - [Bugs et dépannage](#bugs-et-dépannage)
 
-### Configuration
+### Prérequis
 
-Le plugin requiert le [#plugin-mqtt2](https://doc.jeedom.com/fr_FR/plugins/programming/mqtt2).
+Le plugin nécessite que le broker publie un ou plusieurs root_topics qui regroupent chacun une ou plusieurs antennes. Le topic d'auto-découverte est optionnel, s'il n'est pas fourni seule la présence sera disponible sur les équipements.
+La structure doit respecter le schéma suivant:
+```
+/root_topic1/antenne1
+/root_topic1/antenne2
+/root_topic2/antenne3
+...
+/topic_de_découverte
+```
+ex. ici un seul root_topic `theengs` avec 2 antennes `tgw_local`et `tgw_remote`:
+
+![#mqttexplorer](../images/mqttexplorer.png)
+
+### Configuration
 
 #### Broker MQTT
 - Adresse du broker: défaut `mqtt://localhost:1883`
 - Authentification: utilisateur et mot de passe
-- Topic de découverte: topic Home Assistant. défaut: `homeassistant`
-- Topics racines des équipements: topics surveillés par le plugin (au moins un). 
+- Topic de découverte: topic d'auto-découverte des devices compatible Home Assistant. défaut: `homeassistant`
+- Topics racines des équipements: `root_topics` surveillés par le plugin (au moins un). 
 
 #### Devices et Antennes
 - Création automatique: création automatique des devices BLE (désactivé par défaut)

@@ -9,6 +9,7 @@
 <h2>Documentation</h2>
 
 <ul>
+<li><a href="#prerequisites">Prerequisites</a></li>
 <li><a href="#configuration">Configuration</a></li>
 <li><a href="#auto-discovery">Auto-Discovery</a></li>
 <li><a href="#unknown-devices-list">Unknown Devices List</a></li>
@@ -21,16 +22,29 @@
 <li><a href="#bugs-and-troubleshooting">Bugs and Troubleshooting</a></li>
 </ul>
 
-<h3>Configuration</h3>
+<h3>Prerequisites</h3>
 
-<p>This plugin requires the <a href="https://doc.jeedom.com/fr_FR/plugins/programming/mqtt2">#plugin-mqtt2</a>.</p>
+<p>The plugin expects the broker to publish one or several root<em>topics that each group one or several antennas. The auto-discovery topic is optional, if it's not provided only presence will be available on the equipments.
+The expected structure is the following:
+<code>
+/root_topic1/antenne1
+/root_topic1/antenne2
+/root_topic2/antenne3
+...
+/topic_de_découverte
+</code>
+Here's an example of a single root</em>topic <code>theengs</code> with 2 antennas <code>tgw_local</code>and <code>tgw_remote</code>:</p>
+
+<p><img src="../images/mqttexplorer.png" alt="#mqttexplorer" title="" /></p>
+
+<h3>Configuration</h3>
 
 <h4>MQTT Broker</h4>
 
 <ul>
 <li>Broker URL: default <code>mqtt://localhost:1883</code></li>
 <li>Authentication: username and password</li>
-<li>Discovery topic: Home Assistant topic. Default: <code>homeassistant</code></li>
+<li>Discovery topic: Home Assistant compatible topic. Default: <code>homeassistant</code></li>
 <li>Devices root topics: topics monitored by the plugin (at least one required).</li>
 </ul>
 

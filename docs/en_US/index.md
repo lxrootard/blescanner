@@ -7,6 +7,7 @@
 This plugin discovers and manages Bluetooth devices and [OMG ESP32](https://docs.openmqttgateway.com) BLE antennas. [Theengs](https://gateway.theengs.io) antennas are also recognized, but their parameters are not (yet?) available due to lack of Home Assistant auto-discovery support. The plugin does not replace the [#plugin-theengs](https://mips2648.github.io/jeedom-plugins-docs/tgw/en_US/) to deploy and manage Theengs antennas.
 
 ## Documentation
+- [Prerequisites](#prerequisites)
 - [Configuration](#configuration)
 - [Auto-Discovery](#auto-discovery)
 - [Unknown Devices List](#unknown-devices-list)
@@ -18,14 +19,27 @@ This plugin discovers and manages Bluetooth devices and [OMG ESP32](https://docs
 - [FAQ](#faq)
 - [Bugs and Troubleshooting](#bugs-and-troubleshooting)
 
-### Configuration
+### Prerequisites
 
-This plugin requires the [#plugin-mqtt2](https://doc.jeedom.com/fr_FR/plugins/programming/mqtt2).
+The plugin expects the broker to publish one or several root_topics that each group one or several antennas. The auto-discovery topic is optional, if it's not provided only presence will be available on the equipments.
+The expected structure is the following:
+```
+/root_topic1/antenne1
+/root_topic1/antenne2
+/root_topic2/antenne3
+...
+/topic_de_découverte
+```
+Here's an example of a single root_topic `theengs` with 2 antennas `tgw_local`and `tgw_remote`:
+
+![#mqttexplorer](../images/mqttexplorer.png)
+
+### Configuration
 
 ####  MQTT Broker
 - Broker URL: default `mqtt://localhost:1883`
 - Authentication: username and password
-- Discovery topic: Home Assistant topic. Default: `homeassistant`
+- Discovery topic: Home Assistant compatible topic. Default: `homeassistant`
 - Devices root topics: topics monitored by the plugin (at least one required).
 
 #### Devices and Antennas

@@ -9,6 +9,7 @@
 <h2>Documentation</h2>
 
 <ul>
+<li><a href="#prerequis">Prérequis</a></li>
 <li><a href="#configuration">Configuration</a></li>
 <li><a href="#auto-découverte">Auto-découverte</a></li>
 <li><a href="#liste-des-devices-inconnus">Liste des devices inconnus</a></li>
@@ -21,17 +22,30 @@
 <li><a href="#bugs-et-dépannage">Bugs et dépannage</a></li>
 </ul>
 
-<h3>Configuration</h3>
+<h3>Prérequis</h3>
 
-<p>Le plugin requiert le <a href="https://doc.jeedom.com/fr_FR/plugins/programming/mqtt2">#plugin-mqtt2</a>.</p>
+<p>Le plugin nécessite que le broker publie un ou plusieurs root<em>topics qui regroupent chacun une ou plusieurs antennes. Le topic d'auto-découverte est optionnel, s'il n'est pas fourni seule la présence sera disponible sur les équipements.
+La structure doit respecter le schéma suivant:
+<code>
+/root_topic1/antenne1
+/root_topic1/antenne2
+/root_topic2/antenne3
+...
+/topic_de_découverte
+</code>
+ex. ici un seul root</em>topic <code>theengs</code> avec 2 antennes <code>tgw_local</code>et <code>tgw_remote</code>:</p>
+
+<p><img src="../images/mqttexplorer.png" alt="#mqttexplorer" title="" /></p>
+
+<h3>Configuration</h3>
 
 <h4>Broker MQTT</h4>
 
 <ul>
 <li>Adresse du broker: défaut <code>mqtt://localhost:1883</code></li>
 <li>Authentification: utilisateur et mot de passe</li>
-<li>Topic de découverte: topic Home Assistant. défaut: <code>homeassistant</code></li>
-<li>Topics racines des équipements: topics surveillés par le plugin (au moins un). </li>
+<li>Topic de découverte: topic d'auto-découverte des devices compatible Home Assistant. défaut: <code>homeassistant</code></li>
+<li>Topics racines des équipements: <code>root_topics</code> surveillés par le plugin (au moins un). </li>
 </ul>
 
 <h4>Devices et Antennes</h4>
