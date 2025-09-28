@@ -16,7 +16,10 @@
 */
 
 require_once __DIR__  . '/../../../../core/php/core.inc.php';
-require_once __DIR__  . '/MQTTClient.php';
+if (!class_exists('jeedomtools\MQTTClient'))
+	require_once __DIR__ . '/MQTTClient.php';
+
+use jeedomtools\MQTTClient as ble_MQTTClient;
 
 class blescanner extends eqLogic {
 
@@ -24,7 +27,7 @@ class blescanner extends eqLogic {
 
   public static function getDeamon() {
     if (is_null(self::$_deamon)) {
-	self::$_deamon =  new MQTTClient(__CLASS__);
+	self::$_deamon =  new ble_MQTTClient(__CLASS__);
     }
     return self::$_deamon;
   }

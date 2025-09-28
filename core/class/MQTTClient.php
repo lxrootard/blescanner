@@ -15,7 +15,17 @@
 * along with Jeedom. If not, see <http://www.gnu.org/licenses/>.
 */
 
-require_once __DIR__  . '/../../../../core/php/core.inc.php';
+namespace jeedomtools;
+require_once '/var/www/html/core/php/core.inc.php';
+//require_once __DIR__  . '/../../../../core/php/core.inc.php';
+
+use \log as log;
+use \jeedom as jeedom;
+use \cache as cache;
+use \config as config;
+use \system as system;
+use \network as network;
+use \com_http as com_http;
 
 class MQTTClient {
 
@@ -64,7 +74,7 @@ class MQTTClient {
     $cmd .= ' --apikey ' . jeedom::getApiKey($this->_class);
     $cmd .= ' --cycle 1';
     $cmd .= ' --pid ' . jeedom::getTmpFolder($this->_class) . '/mqttDeamon.pid';
-    log::add($class, 'info',$this->_class . 'd started with command: ' . $cmd);
+    log::add($this->_class, 'info',$this->_class . 'd started with command: ' . $cmd);
     exec($cmd . ' >> ' . log::getPathToLog($this->_class . 'd') . ' 2>&1 &');
   }
 

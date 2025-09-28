@@ -10,6 +10,9 @@
 - User Documentation [(fr)](docs/fr_FR/index.md)
 
 ## ChangeLog
+* v0.5 [lxrootard](https://github.com/lxrootard)
+<br> - bug fix debian12/php8
+<br> - code modularization
 * v0.4 [lxrootard](https://github.com/lxrootard)
 <br> - bug fixes
 * v0.3 [lxrootard](https://github.com/lxrootard)
