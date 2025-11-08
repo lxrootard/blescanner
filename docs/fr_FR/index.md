@@ -40,7 +40,7 @@ ex. ici un seul root_topic `theengs` avec 2 antennes `tgw_local`et `tgw_remote`:
 - Adresse du broker: défaut `mqtt://localhost:1883`
 - Authentification: utilisateur et mot de passe
 - Topic de découverte: topic d'auto-découverte des devices compatible Home Assistant. défaut: `homeassistant`
-- Topics racines des équipements: `root_topics` surveillés par le plugin (au moins un). 
+- Topics racines des équipements: `root_topics` surveillés par le plugin (au moins un). Les sous-topics ne sont pas acceptés.
 
 #### Devices et Antennes
 - Création automatique: création automatique des devices BLE (désactivé par défaut)
@@ -126,4 +126,4 @@ Pour les actions le champ `payload` doit être de la forme `"clé1":valeur1 , "c
 <br>Seuls les ESP32 remontent cette information à partir du fw v1.8 (feature expérimentale). Pour cela activez le paramètre `BT: Publish HASS presence`
 
 ### Bugs et dépannage
-Voir le forum [Jeedom community](https://community.jeedom.com)
+Voir le forum [Jeedom community](https://community.jeedom.com/tag/plugin-blescanner)

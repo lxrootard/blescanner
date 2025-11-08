@@ -41,8 +41,18 @@ function createTopicElement(topic) {
 }
 
 function addTopic() {
+    const re = /^[A-Za-z0-9_-]+$/;
+    const input = document.getElementById('new-topic');
     const topic = newTopic.value.trim();
+    const val = input.value.trim();
     if (topic === "") return;
+    if (!re.test(val)) {
+      input.focus();
+      input.setCustomValidity('Seuls les caractères alphanumériques (A–Z, a–z, 0–9), tiret et sous-tiret sont autorisés.');
+      input.reportValidity();
+      setTimeout(() => input.setCustomValidity(''), 1000);
+      return;
+    }
 
     const existingTopics = Array.from(topicsList.querySelectorAll("li")).map(li => li.dataset.topic);
     if (!existingTopics.includes(topic)) {

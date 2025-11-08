@@ -52,7 +52,6 @@ $eqLogics = eqLogic::byType($plugin->getId());
                 <i class="fas fa-medkit"></i><br>
                 <span>{{Santé Antennes}}</span>
         </div>
-<!--
         <div class="cursor pluginAction logoSecondary" data-action="openLocation"
             data-location="<?= $plugin->getDocumentation() ?>">
                 <i class="fas fa-book"></i><br>
@@ -63,7 +62,6 @@ $eqLogics = eqLogic::byType($plugin->getId());
                 <i class="fas fa-comments"></i><br>
                 <span>{{Community}}</span>
         </div>
--->
     </div>
     <div class="input-group" style="margin:5px;">
             <input class="form-control roundedLeft" placeholder="{{Rechercher}}" id="in_searchEqlogic" />
@@ -76,7 +74,6 @@ $eqLogics = eqLogic::byType($plugin->getId());
 	displayEqLogics ($eqLogics, 'Device');
     ?>
 </div>
-
 <div class="col-xs-12 eqLogic" style="display: none;">
         <div class="input-group pull-right" style="display:inline-flex">
             <span class="input-group-btn">

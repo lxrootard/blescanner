@@ -10,6 +10,9 @@
 - User Documentation [(fr)](docs/fr_FR/index.md)
 
 ## ChangeLog
+* v0.6 [lxrootard](https://github.com/lxrootard)
+<br> - documentation and community links on plugin page
+<br> - root topic format check
 * v0.5 [lxrootard](https://github.com/lxrootard)
 <br> - bug fix debian12/php8
 <br> - code modularization
@@ -24,4 +27,3 @@
 
 ## Credits and dependencies
 Author: lxrootard
-<br>Uses the [MQTT Manager](https://doc.jeedom.com/fr_FR/plugins/programming/mqtt2/) plugin

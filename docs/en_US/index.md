@@ -40,7 +40,7 @@ Here's an example of a single root_topic `theengs` with 2 antennas `tgw_local`an
 - Broker URL: default `mqtt://localhost:1883`
 - Authentication: username and password
 - Discovery topic: Home Assistant compatible topic. Default: `homeassistant`
-- Devices root topics: topics monitored by the plugin (at least one required).
+- Devices root topics: topics monitored by the plugin (at least one required). Sub-topics are not allowed.
 
 #### Devices and Antennas
 
@@ -129,4 +129,4 @@ Both advertising and auto-discovered data are available in the `Other Data` colu
 
 ### Bugs and Troubleshooting
 
-See the [Jeedom community forum](https://community.jeedom.com)
+See the [Jeedom community forum](https://community.jeedom.com/tag/plugin-blescanner)

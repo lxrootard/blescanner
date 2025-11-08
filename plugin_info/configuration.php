@@ -90,7 +90,7 @@ if (!isConnect()) {
 	</div>
 	<div class="form-group">
 	   <label class="col-lg-4 control-label">{{Topics racines}}&nbsp;
-	     <sup><i class="fas fa-question-circle tooltips" title="{{Topics racines des antennes BLE à monitorer}}"></i></sup>
+	     <sup><i class="fas fa-question-circle tooltips" title="{{Topics racines des antennes BLE à monitorer. Pas de sous-topics}}"></i></sup>
 	   </label>
 	   <div class="col-lg-3">
 	     <input class="configKey form-control" data-l1key="ble_root_topics" type="hidden"/>
