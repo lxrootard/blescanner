@@ -26,6 +26,7 @@ use \config as config;
 use \system as system;
 use \network as network;
 use \com_http as com_http;
+use \Exception as Exception;
 
 class MQTTClient {
 

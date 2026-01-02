@@ -10,6 +10,9 @@
 - User Documentation [(fr)](docs/fr_FR/index.md)
 
 ## ChangeLog
+* v0.7 [lxrootard](https://github.com/lxrootard)
+<br> - fix battery status in equipments view
+<br> - dependancy fix for Jeedom 4.5
 * v0.6 [lxrootard](https://github.com/lxrootard)
 <br> - documentation and community links on plugin page
 <br> - root topic format check

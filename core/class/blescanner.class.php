@@ -276,6 +276,8 @@ class blescanner extends eqLogic {
 		$cmd = $this->getCmd('info',$uid);
 		if (! is_object($cmd))
 			continue;
+		if ($cmd->getGeneric_type() == 'BATTERY')
+			$this->batteryStatus($value);
 		log::add(__CLASS__, 'debug', '['. __FUNCTION__ .'] antenna: ' . $aLogic->getName() . ' update cmd=' . $uid . ' value: ' . $value);
 		$this->checkAndUpdateCmd ($uid, $value);
 	}
