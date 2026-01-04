@@ -81,3 +81,13 @@ $('.configKey[data-l1key="ble_root_topics"]').change(function() {
 	initializeTopics();
     initDone = true;
 });
+
+
+$('.configKey[data-l1key=mqttMode]').off('change').on('change', function() {
+    $('.mqttMode').hide()
+    if ((! $(this).value()) || ($(this).value() == 'local'))
+	$('.remote').hide()
+    else
+	$('.remote').show()
+})
+

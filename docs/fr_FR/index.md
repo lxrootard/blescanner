@@ -30,15 +30,30 @@ La structure doit respecter le schéma suivant:
 ...
 /topic_de_découverte
 ```
-ex. ici un seul root_topic `theengs` avec 2 antennes `tgw_local`et `tgw_remote`:
+ex. ici un seul root_topic `theengs` avec 2 antennes `tgw_local`et `tgw_remote`.
+<br> `LWT` et `BTtoMQTT` doivent être directement sous chaque antenne:
 
 ![#mqttexplorer](../images/mqttexplorer.png)
 
+
+
 ### Configuration
 
-#### Broker MQTT
+#### Broker MQTT local (MQTT2)
+Par défaut dans ce mode le plugin utilise la configuration MQTT2 (si installé).<br>
+Le démarrage du plugin MQTT2 est automatique.
+![config](../images/blescanner1.png)
+
+#### Broker MQTT externe
+Dans ce mode le démarrage du broker MQTT n'est pas géré par le plugin.
+<br>Il est nécessaire de renseigner les informations de connexion MQTT.
 - Adresse du broker: défaut `mqtt://localhost:1883`
 - Authentification: utilisateur et mot de passe
+
+
+![config](../images/blescanner12.png)
+
+#### Paramètres MQTT communs
 - Topic de découverte: topic d'auto-découverte des devices compatible Home Assistant. défaut: `homeassistant`
 - Topics racines des équipements: `root_topics` surveillés par le plugin (au moins un). Les sous-topics ne sont pas acceptés.
 
@@ -50,8 +65,6 @@ ex. ici un seul root_topic `theengs` avec 2 antennes `tgw_local`et `tgw_remote`:
 #### Système
 
 - Port du deamon: défault `55036`, ne pas changer sauf conflit
-
-![config](../images/blescanner1.png)
 
 ### Auto-découverte
 

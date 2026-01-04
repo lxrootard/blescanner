@@ -49,6 +49,9 @@ class blescanner extends eqLogic {
     if (empty(config::byKey('auto_create',__CLASS__)))
 	config::save('auto_create',false,__CLASS__);
 
+    if (empty(config::byKey('mqttMode',__CLASS__)))
+        config::save('mqttMode','local',__CLASS__);
+
     $mqttSettings = config::byKey('broker',__CLASS__,array());
     if (empty($mqttSettings)) {
 	$mqttSettings['port'] = '1883';
@@ -167,6 +170,8 @@ class blescanner extends eqLogic {
   }
 
   public static function initSettings() {
+    self::manageMqtt2();
+
     $t1 = intval(config::byKey('disco_duration',__CLASS__));
     log::add(__CLASS__, 'info', 'timeout auto-découverte: ' . $t1 . ' mins');
     if (! is_int($t1) || ($t1 < 1))
@@ -886,6 +891,31 @@ class blescanner extends eqLogic {
 
     // log::add(__CLASS__, 'debug', '['.__FUNCTION__ . '] state= ' . $rc['state']);
     return $rc;
+  }
+
+  public static function manageMqtt2() {
+    $mode = config::byKey('mqttMode',__CLASS__);
+    log::add(__CLASS__, 'debug', '['.__FUNCTION__ . '] mode: ' . $mode);
+    if ($mode != 'local')
+	return;
+
+    $mqtt2 = plugin::byId('mqtt2');
+    if ((! $mqtt2) || (!$mqtt2->isActive()))
+        throw new Exception("Le plugin MQTT2 n'est pas installé ou pas activé");
+    if (class_exists('mqtt2')) {
+	$mqtt2Infos = mqtt2::getFormatedInfos();
+	// log::add(__CLASS__, 'debug', '['.__FUNCTION__ . '] config' . json_encode($mqtt2Infos));
+	$mqttSettings = config::byKey('broker',__CLASS__,array());
+	$mqttSettings['host'] = $mqtt2Infos['ip'];
+	$mqttSettings['port'] = $mqtt2Infos['port'];
+	$mqttSettings['user'] = $mqtt2Infos['user'];
+	$mqttSettings['passwd'] = $mqtt2Infos['password'];
+	config::save('broker',json_encode($mqttSettings), __CLASS__);
+	if (mqtt2::deamon_info()['state'] != 'ok') {
+	     log::add(__CLASS__, 'debug', '['.__FUNCTION__ . '] Démarrage du démon MQTT2');
+	     mqtt2::deamon_start();
+	}
+    }
   }
 
   public static function deamon_start() {

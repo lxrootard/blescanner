@@ -58,6 +58,17 @@ if (!isConnect()) {
      <div class="col-md-6">
 	<legend><i class="fab fa-hubspot"></i>&nbsp;{{Broker MQTT}}</legend>
 	<div class="form-group">
+	   <label class="col-lg-4 control-label">{{Mode MQTT}}
+		<sup><i class="fas fa-question-circle tooltips" title="{{Mode du deamon MQTT. défaut: plugin MQTT Manager (MQTT2)}}"></i></sup>
+	   </label>
+	   <div class="col-lg-3">
+		<select class="configKey form-control" data-l1key="mqttMode">
+		    <option value="local" selected>{{MQTT2 (local)}}</option>
+		    <option value="remote">{{Externe}}</option>
+		</select>
+	   </div>
+	</div>
+	<div class="form-group mqttMode remote">
 	   <label class="col-lg-4 control-label">{{Adresse du broker}}&nbsp;
 	     <sup><i class="fa fa-question-circle tooltips" title="{{URL du service MQTT}}"></i></sup>
 	   </label>
@@ -70,7 +81,7 @@ if (!isConnect()) {
 		type="number" min="1" max="65535" title="{{Port  du Broker. Défaut: 1883}}"/>
 	   </div>
 	</div>
-	<div class="form-group">
+	<div class="form-group mqttMode remote">
 	   <label class="col-lg-4 control-label">{{Authentification}}&nbsp;
 	     <sup><i class="fa fa-question-circle tooltips" title="{{Utilisateur et mot de passe}}"></i></sup>
 	   </label>
@@ -80,6 +91,7 @@ if (!isConnect()) {
              <input class="configKey form-control" data-l1key="broker" data-l2key="passwd" type="password" placeholder="mot de passe mqtt"/>
 	   </div>
 	</div>
+	<p>
 	<div class="form-group">
 	   <label class="col-lg-4 control-label">{{Topic de découverte}}&nbsp;
 	     <sup><i class="fas fa-question-circle tooltips" title="{{Topic d'auto-découverte. Défaut: homeassistant}}"></i></sup>

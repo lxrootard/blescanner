@@ -33,17 +33,31 @@ La structure doit respecter le schéma suivant:
 ...
 /topic_de_découverte
 </code>
-ex. ici un seul root</em>topic <code>theengs</code> avec 2 antennes <code>tgw_local</code>et <code>tgw_remote</code>:</p>
+ex. ici un seul root</em>topic <code>theengs</code> avec 2 antennes <code>tgw_local</code>et <code>tgw_remote</code>.
+<br> <code>LWT</code> et <code>BTtoMQTT</code> doivent être directement sous chaque antenne:</p>
 
 <p><img src="../images/mqttexplorer.png" alt="#mqttexplorer" title="" /></p>
 
 <h3>Configuration</h3>
 
-<h4>Broker MQTT</h4>
+<h4>Broker MQTT local (MQTT2)</h4>
+
+<p>Par défaut dans ce mode le plugin utilise la configuration MQTT2 (si installé).<br>
+Le démarrage du plugin MQTT2 est automatique.
+<img src="../images/blescanner1.png" alt="config" title="" /></p>
+
+<h4>Broker MQTT externe</h4>
+
+<p>Dans ce mode le démarrage du broker MQTT n'est pas géré par le plugin.
+<br>Il est nécessaire de renseigner les informations de connexion MQTT.
+- Adresse du broker: défaut <code>mqtt://localhost:1883</code>
+- Authentification: utilisateur et mot de passe</p>
+
+<p><img src="../images/blescanner12.png" alt="config" title="" /></p>
+
+<h4>Paramètres MQTT communs</h4>
 
 <ul>
-<li>Adresse du broker: défaut <code>mqtt://localhost:1883</code></li>
-<li>Authentification: utilisateur et mot de passe</li>
 <li>Topic de découverte: topic d'auto-découverte des devices compatible Home Assistant. défaut: <code>homeassistant</code></li>
 <li>Topics racines des équipements: <code>root_topics</code> surveillés par le plugin (au moins un). Les sous-topics ne sont pas acceptés.</li>
 </ul>
@@ -61,8 +75,6 @@ ex. ici un seul root</em>topic <code>theengs</code> avec 2 antennes <code>tgw_lo
 <ul>
 <li>Port du deamon: défault <code>55036</code>, ne pas changer sauf conflit</li>
 </ul>
-
-<p><img src="../images/blescanner1.png" alt="config" title="" /></p>
 
 <h3>Auto-découverte</h3>
 

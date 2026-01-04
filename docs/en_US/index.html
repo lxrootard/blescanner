@@ -33,17 +33,34 @@ The expected structure is the following:
 ...
 /topic_de_découverte
 </code>
-Here's an example of a single root</em>topic <code>theengs</code> with 2 antennas <code>tgw_local</code>and <code>tgw_remote</code>:</p>
+Here's an example of a single root</em>topic <code>theengs</code> with 2 antennas <code>tgw_local</code>and <code>tgw_remote</code>.
+<br> <code>LWT</code> and <code>BTtoMQTT</code> must appear under each antenna:</p>
 
 <p><img src="../images/mqttexplorer.png" alt="#mqttexplorer" title="" /></p>
 
 <h3>Configuration</h3>
 
-<h4>MQTT Broker</h4>
+<h4>Local MQTT broker (MQTT2)</h4>
+
+<p>Using this mode the plugin uses the <code>MQTT2</code> configuration (if installed) <br>
+The <code>MQTT2</code> plugin startup is automatic.
+<img src="../images/blescanner1.png" alt="config" title="" /></p>
+
+<h4>External MQTT Broker</h4>
+
+<p>Using this mode the MQTT broker is not managed by the plugin.
+<br>It's mandatory to setup the MQTT connexion settings. </p>
 
 <ul>
 <li>Broker URL: default <code>mqtt://localhost:1883</code></li>
 <li>Authentication: username and password</li>
+</ul>
+
+<p><img src="../images/blescanner12.png" alt="config" title="" /></p>
+
+<h4>Common MQTT parameters</h4>
+
+<ul>
 <li>Discovery topic: Home Assistant compatible topic. Default: <code>homeassistant</code></li>
 <li>Devices root topics: topics monitored by the plugin (at least one required). Sub-topics are not allowed.</li>
 </ul>

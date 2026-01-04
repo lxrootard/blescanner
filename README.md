@@ -10,6 +10,8 @@
 - User Documentation [(fr)](docs/fr_FR/index.md)
 
 ## ChangeLog
+* v0.8 [lxrootard](https://github.com/lxrootard)
+<br> - added compatibility mode for MQTT2 plugin
 * v0.7 [lxrootard](https://github.com/lxrootard)
 <br> - fix battery status in equipments view
 <br> - dependancy fix for Jeedom 4.5

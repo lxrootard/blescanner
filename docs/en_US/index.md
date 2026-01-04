@@ -30,15 +30,29 @@ The expected structure is the following:
 ...
 /topic_de_découverte
 ```
-Here's an example of a single root_topic `theengs` with 2 antennas `tgw_local`and `tgw_remote`:
+Here's an example of a single root_topic `theengs` with 2 antennas `tgw_local`and `tgw_remote`.
+<br> `LWT` and `BTtoMQTT` must appear under each antenna:
 
 ![#mqttexplorer](../images/mqttexplorer.png)
 
 ### Configuration
 
-####  MQTT Broker
+#### Local MQTT broker (MQTT2)
+Using this mode the plugin uses the `MQTT2` configuration (if installed) <br>
+The `MQTT2` plugin startup is automatic.
+![config](../images/blescanner1.png)
+
+#### External MQTT Broker
+Using this mode the MQTT broker is not managed by the plugin.
+<br>It's mandatory to setup the MQTT connexion settings. 
+
 - Broker URL: default `mqtt://localhost:1883`
 - Authentication: username and password
+
+![config](../images/blescanner12.png)
+
+#### Common MQTT parameters
+
 - Discovery topic: Home Assistant compatible topic. Default: `homeassistant`
 - Devices root topics: topics monitored by the plugin (at least one required). Sub-topics are not allowed.
 
