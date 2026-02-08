@@ -4,7 +4,10 @@
 <img src="../images/blescanner_icon.png" alt="Logo Plugin" title="" />
 <img src="../images/theengs_icon.png" alt="Logo Plugin" title="" /></p>
 
-<p>Ce plugin permet de découvrir/gérer les devices bluetooth et les antennes BLE <a href="https://docs.openmqttgateway.com">OMG ESP32</a>. Les antennes <a href="https://gateway.theengs.io">Theengs</a> sont aussi reconnues mais pas leurs paramètres car elles ne supportent pas (encore?) l'auto-découverte Home Assistant. Il ne remplace pas le <a href="https://mips2648.github.io/jeedom-plugins-docs/tgw/fr_FR/">#plugin-theengs</a> pour déployer et gérer les antennes Theengs.</p>
+<p>Ce plugin permet de découvrir/gérer les devices bluetooth et les antennes BLE <a href="https://docs.openmqttgateway.com">OMG ESP32</a>. 
+<br>Il est aussi compatible avec les antennes <a href="https://gateway.theengs.io/">Theengs</a>. 
+<br>Il est compatible avec le <a href="https://mips2648.github.io/jeedom-plugins-docs/tgw/fr_FR/">#plugin-tgw</a>
+et il peut fonctionner avec ou sans le <a href="https://doc.jeedom.com/fr_FR/plugins/programming/mqtt2">#plugin-mqtt2</a> </p>
 
 <h2>Documentation</h2>
 
@@ -24,7 +27,16 @@
 
 <h3>Prérequis</h3>
 
-<p>Le plugin nécessite que le broker publie un ou plusieurs root<em>topics qui regroupent chacun une ou plusieurs antennes. Le topic d'auto-découverte est optionnel, s'il n'est pas fourni seule la présence sera disponible sur les équipements.
+<p>Le plugin n'installe pas les antennes. Plusieurs options: </p>
+
+<h4>Antennes gérées par le plugin-tgw</h4>
+
+<p>Il suffit de cocher la case correspondante, cf <a href="#configuration">Configuration</a> plus bas.</p>
+
+<h4>ESP32 et antennes installées manuellement</h4>
+
+<p>Les antennes doivent publier leurs infos sur un ou plusieurs topics racines qui regroupent chacun une ou plusieurs antennes. 
+<br>Le topic d'auto-découverte est optionnel, s'il n'est pas fourni seule la présence sera disponible sur les équipements. <br>
 La structure doit respecter le schéma suivant:
 <code>
 /root_topic1/antenne1
@@ -33,18 +45,19 @@ La structure doit respecter le schéma suivant:
 ...
 /topic_de_découverte
 </code>
-ex. ici un seul root</em>topic <code>theengs</code> avec 2 antennes <code>tgw_local</code>et <code>tgw_remote</code>.
-<br> <code>LWT</code> et <code>BTtoMQTT</code> doivent être directement sous chaque antenne:</p>
+ex. ici un seul topic racine <code>theengs</code> avec 2 antennes <code>tgw_local</code>et <code>tgw_remote</code>.
+<br> Attention! <code>LWT</code> et <code>BTtoMQTT</code> doivent être directement sous chaque antenne sinon cocher la case compatiblité <code>plugin-tgw</code>.</p>
 
 <p><img src="../images/mqttexplorer.png" alt="#mqttexplorer" title="" /></p>
 
-<h3>Configuration</h3>
+<h3>Configuration du broker</h3>
 
-<h4>Broker MQTT local (MQTT2)</h4>
+<h4>Broker MQTT local (plugin-mqtt2)</h4>
 
-<p>Par défaut dans ce mode le plugin utilise la configuration MQTT2 (si installé).<br>
-Le démarrage du plugin MQTT2 est automatique.
-<img src="../images/blescanner1.png" alt="config" title="" /></p>
+<p>Par défaut dans ce mode le plugin utilise la configuration du <code>plugin-mqtt2</code> (si installé).<br>
+Le démarrage du <code>plugin-mqtt2</code> est automatique.</p>
+
+<p><img src="../images/blescanner1.png" alt="config" title="" /></p>
 
 <h4>Broker MQTT externe</h4>
 
@@ -65,6 +78,7 @@ Le démarrage du plugin MQTT2 est automatique.
 <h4>Devices et Antennes</h4>
 
 <ul>
+<li>Compatibilité plugin tgw: à activer si vos antennes sont gérées par le plugin <code>plugin-tgw</code>. Dans ce cas le root topic est automatiquement renseigné.</li>
 <li>Création automatique: création automatique des devices BLE (désactivé par défaut)</li>
 <li>Durée d'auto-découverte: délai de détection des antennes et des devices (en minutes)</li>
 <li>Délai d'absence: délai après lequel les devices inactifs seront supprimés (en minutes, 0 pour les garder indéfiniment)</li>
@@ -117,9 +131,10 @@ Il s'active en sélectionnant un noeud.
 <p>Les commandes disponibles dépendent du type de device ou d'antenne.
 <br> Une image personnalisée peut être ajoutée par catégorie d'équipement.</p>
 
-<p>Les antennes Theengs n'ont aucune commande sauf la présence. Les antennes ESP32 possèdent plusieurs commandes supplémentaires, cf les onglets <code>Bluetooth</code> et <code>Système</code>.
+<p>Les antennes Theengs n'ont aucune commande sauf la présence. 
+<br>Les antennes ESP32 possèdent plusieurs commandes supplémentaires, cf les onglets <code>Bluetooth</code> et <code>Système</code>.
 <br>Le bouton <code>Console web</code> permet d'accéder à l'interface d'administration des ESP32. 
-<br>Pour plus d'informations voir la doc des <a href="https://docs.openmqttgateway.com/use/gateway.html#system-commands-esp-only">commandes ESP32</a></p>
+<br>Pour plus d'informations voir la doc des <a href="https://docs.openmqttgateway.com/use/gateway.html#system-commands-esp-only">commandes ESP32 Theengs</a>.</p>
 
 <p><img src="../images/blescanner7.png" alt="Equipments" title="" /></p>
 
@@ -146,6 +161,7 @@ Il s'active en sélectionnant un noeud.
 
 <ul>
 <li>Les antennes ne sont pas détectées ou certains devices ne s'affichent pas comme découvrables:
+<br>Vérifiez vos topics racines
 <br>Relancez l'auto-découverte sur vos antennes (<code>BT: Force scan</code> ou reboot de l'ESP32 ou de l'antenne Theengs)</li>
 <li>Les commandes ESP32 ne sont pas créées
 <br>Activez le paramètre <code>SYS: Auto discovery</code></li>

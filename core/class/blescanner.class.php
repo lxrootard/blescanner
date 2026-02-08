@@ -33,9 +33,12 @@ class blescanner extends eqLogic {
   }
 
   public static function initConfig() {
-    log::add(__CLASS__, 'debug', __FUNCTION__);
+    log::add(__CLASS__, 'debug', '[' .__FUNCTION__ .']');
     if (empty(config::byKey('ble_root_topics', __CLASS__)))
 	config::save('ble_root_topics','theengs',__CLASS__);
+
+    if (empty(config::byKey('use_plugin_tgw', __CLASS__)))
+        config::save('use_plugin_tgw',true,__CLASS__);
 
     if (empty(config::byKey('disco_topic',__CLASS__)))
 	config::save('disco_topic', 'homeassistant',__CLASS__);
@@ -70,7 +73,11 @@ class blescanner extends eqLogic {
   public static function getRootTopics() {
     $s = config::byKey('ble_root_topics', __CLASS__);
     $s = explode(',',$s);
-    // log::add(__CLASS__, 'debug', 'root topics: ' . json_encode($s));
+//  log::add(__CLASS__, 'debug', '[' .__FUNCTION__ .'] root topics: ' . json_encode($s));
+
+    if (config::byKey('use_plugin_tgw',__CLASS__))
+	array_push($s,'tgw');
+
     if (! is_array($s))
 	throw new Exception (__FUNCTION__ . ': erreur inattendue sur le décodage des topics');
     return $s;
@@ -809,7 +816,12 @@ class blescanner extends eqLogic {
   }
 
   public static function updateLWT ($key, $alive) {
+    log::add(__CLASS__, 'debug', '[' . __FUNCTION__ . '] key= ' . $key);
     $eqLogic = self::byLogicalId($key, __CLASS__);
+    //  plugin-tgw
+    if (!is_object($eqLogic))
+	$eqLogic = self::searchAntennas($key);
+
     if (is_object($eqLogic)) {
 	log::add(__CLASS__, 'debug', '[' . __FUNCTION__ . '] antenna: ' . $key . ' LWT: ' . $alive);
 	$cmdUid = $eqLogic->getConfiguration('antennaUid') . '-connectivity';
@@ -817,8 +829,20 @@ class blescanner extends eqLogic {
     }
   }
 
+  public static function searchAntennas($key) {
+     log::add(__CLASS__, 'debug', '[' . __FUNCTION__ . '] key= ' . $key);
+     $eqLogics = self::getDevices ('Antenna');
+     foreach ($eqLogics as $eqLogic) {
+	log::add(__CLASS__, 'debug', '[' . __FUNCTION__ . '] uid=' . $eqLogic->getUid() . ' key=' . $key);
+	if (strpos($eqLogic->getUid(), $key)!== false)
+	   // $eqLogic->setConfiguration('antennaLWT', $key);
+	   return $eqLogic;
+     }
+     return null;
+  }
+
   public static function handleTopic($rootTopic, $msg) {
-//  log::add(__CLASS__, 'debug', '[' . __FUNCTION__ . '] topic: ' . $rootTopic . ' msg=' . json_encode($msg));
+    log::add(__CLASS__, 'debug', '[' . __FUNCTION__ . '] topic: ' . $rootTopic . ' msg=' . json_encode($msg));
     $disco=cache::byKey('blescanner::disco')->getValue();
     foreach ($msg as $key => $value) {
 	$alive = $value["LWT"];
@@ -834,6 +858,7 @@ class blescanner extends eqLogic {
 		if (is_object($eqLogic))
 			$eqLogic->updateBtConfig($topic, $val);
 	}
+
 	$val = $value["SYStoMQTT"];
 	$topic = $rootTopic . '/' . $key . '/SYStoMQTT';
 	if (isset($val) && is_object($eqLogic))
@@ -900,7 +925,7 @@ class blescanner extends eqLogic {
 	return;
 
     $mqtt2 = plugin::byId('mqtt2');
-    if ((! $mqtt2) || (!$mqtt2->isActive()))
+    if ((! is_object($mqtt2)) || (!$mqtt2->isActive()))
         throw new Exception("Le plugin MQTT2 n'est pas installé ou pas activé");
     if (class_exists('mqtt2')) {
 	$mqtt2Infos = mqtt2::getFormatedInfos();

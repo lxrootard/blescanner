@@ -124,6 +124,14 @@ if (!isConnect()) {
      <div class="col-md-6">
 	<legend><i class="fas fa-wifi"></i>&nbsp;{{Devices et Antennes}}</legend>
 	<div class="form-group">
+	   <label class="col-md-4 control-label">{{Compatibilité plugin tgw}}
+		<sup><i class="fas fa-question-circle tooltips" title="{{Topics compatibles tgw}}"></i></sup>
+	   </label>
+	   <div class="col-md-1">
+		<input type="checkbox" class="configKey" data-l1key="use_plugin_tgw" checked>
+	   </div>
+	</div>
+	<div class="form-group">
 	   <label class="col-lg-4 control-label">{{Création automatique}}&nbsp;
 	     <sup><i class="fas fa-question-circle tooltips" title="{{Créer automatiquement les devices auto-découverts}}"></i></sup>
 	   </label>

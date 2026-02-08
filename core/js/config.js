@@ -40,7 +40,7 @@ function createTopicElement(topic) {
     topicsList.appendChild(li);
 }
 
-function addTopic() {
+function createTopic() {
     const re = /^[A-Za-z0-9_-]+$/;
     const input = document.getElementById('new-topic');
     const topic = newTopic.value.trim();
@@ -53,7 +53,10 @@ function addTopic() {
       setTimeout(() => input.setCustomValidity(''), 1000);
       return;
     }
+    addTopic(topic)
+}
 
+function addTopic(topic) {
     const existingTopics = Array.from(topicsList.querySelectorAll("li")).map(li => li.dataset.topic);
     if (!existingTopics.includes(topic)) {
 	createTopicElement(topic);
@@ -62,18 +65,27 @@ function addTopic() {
     }
 }
 
-addBtn.addEventListener("click", addTopic);
+function removeTopic(topic) {
+    const t = topicsList.querySelector(`li[data-topic="${topic}"]`);
+    if (t) {
+        t.remove();
+        updateHiddenInput();
+    }
+}
+
+addBtn.addEventListener("click", createTopic);
 
 newTopic.addEventListener("keydown", function (e) {
     if (e.key === "Enter") {
 	e.preventDefault();
-	addTopic();
+	createTopic();
     }
 });
 
 function initializeTopics() {
     topicsList.innerHTML = "";
-    hiddenInput.value.split(',').forEach(t => createTopicElement(t));
+    if (hiddenInput.value != "")
+	hiddenInput.value.split(',').forEach(t => createTopicElement(t));
 }
 
 $('.configKey[data-l1key="ble_root_topics"]').change(function() {
@@ -91,3 +103,9 @@ $('.configKey[data-l1key=mqttMode]').off('change').on('change', function() {
 	$('.remote').show()
 })
 
+$('.configKey[data-l1key=use_plugin_tgw]').off('change').on('change', function() {
+    if ($(this).value() == 1)
+	addTopic('home');
+    else
+	removeTopic('home');
+})

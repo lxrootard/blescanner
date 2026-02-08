@@ -1,10 +1,13 @@
-<h1>Jeedom Plugin for managing Bluetooth Devices and ESP32 BLE Antennas with MQTT</h1>
+<h1>Jeedom Plugin for Managing Bluetooth Devices and ESP32 BLE Antennas via MQTT</h1>
 
 <p><img src="../images/jeedom.png" alt="Jeedom Logo" title="" />
 <img src="../images/blescanner_icon.png" alt="Plugin Logo" title="" />
 <img src="../images/theengs_icon.png" alt="Plugin Logo" title="" /></p>
 
-<p>This plugin discovers and manages Bluetooth devices and <a href="https://docs.openmqttgateway.com">OMG ESP32</a> BLE antennas. <a href="https://gateway.theengs.io">Theengs</a> antennas are also recognized, but their parameters are not (yet?) available due to lack of Home Assistant auto-discovery support. The plugin does not replace the <a href="https://mips2648.github.io/jeedom-plugins-docs/tgw/en_US/">#plugin-theengs</a> to deploy and manage Theengs antennas.</p>
+<p>This plugin allows you to discover and manage Bluetooth devices and <a href="https://docs.openmqttgateway.com">OMG ESP32</a> BLE antennas. <br />
+<br>It is also compatible with <a href="https://gateway.theengs.io/">Theengs</a> antennas. <br />
+<br>It is compatible with the <a href="https://mips2648.github.io/jeedom-plugins-docs/tgw/en_US/">#plugin-tgw</a> <br />
+and can work with or without the <a href="https://doc.jeedom.com/en_US/plugins/programming/mqtt2">#plugin-mqtt2</a></p>
 
 <h2>Documentation</h2>
 
@@ -24,120 +27,131 @@
 
 <h3>Prerequisites</h3>
 
-<p>The plugin expects the broker to publish one or several root<em>topics that each group one or several antennas. The auto-discovery topic is optional, if it's not provided only presence will be available on the equipments.
-The expected structure is the following:
+<p>The plugin does not install antennas. Several options are available:</p>
+
+<h4>Antennas Managed by plugin-tgw</h4>
+
+<p>Simply check the corresponding box, see <a href="#configuration">Configuration</a> below.</p>
+
+<h4>ESP32 and Manually Installed Antennas</h4>
+
+<p>Antennas must publish their information to one or more root topics, each grouping one or more antennas. <br />
+<br>The auto-discovery topic is optional; if not provided, only presence will be available on the equipment. <br>
+The structure must follow this schema:
 <code>
-/root_topic1/antenne1
-/root_topic1/antenne2
-/root_topic2/antenne3
+/root_topic1/antenna1
+/root_topic1/antenna2
+/root_topic2/antenna3
 ...
-/topic_de_découverte
+/discovery_topic
 </code>
-Here's an example of a single root</em>topic <code>theengs</code> with 2 antennas <code>tgw_local</code>and <code>tgw_remote</code>.
-<br> <code>LWT</code> and <code>BTtoMQTT</code> must appear under each antenna:</p>
+Example: here a single root topic <code>theengs</code> with 2 antennas <code>tgw_local</code> and <code>tgw_remote</code>.
+<br> Warning! <code>LWT</code> and <code>BTtoMQTT</code> must be directly under each antenna, otherwise check the <code>plugin-tgw</code> compatibility box.</p>
 
 <p><img src="../images/mqttexplorer.png" alt="#mqttexplorer" title="" /></p>
 
-<h3>Configuration</h3>
+<h3>Broker Configuration</h3>
 
-<h4>Local MQTT broker (MQTT2)</h4>
+<h4>Local MQTT Broker (plugin-mqtt2)</h4>
 
-<p>Using this mode the plugin uses the <code>MQTT2</code> configuration (if installed) <br>
-The <code>MQTT2</code> plugin startup is automatic.
-<img src="../images/blescanner1.png" alt="config" title="" /></p>
+<p>By default in this mode, the plugin uses the <code>plugin-mqtt2</code> configuration (if installed).<br>
+The <code>plugin-mqtt2</code> startup is automatic.</p>
+
+<p><img src="../images/blescanner1.png" alt="config" title="" /></p>
 
 <h4>External MQTT Broker</h4>
 
-<p>Using this mode the MQTT broker is not managed by the plugin.
-<br>It's mandatory to setup the MQTT connexion settings. </p>
-
-<ul>
-<li>Broker URL: default <code>mqtt://localhost:1883</code></li>
-<li>Authentication: username and password</li>
-</ul>
+<p>In this mode, the MQTT broker startup is not managed by the plugin.
+<br>It is necessary to provide the MQTT connection information.
+- Broker address: default <code>mqtt://localhost:1883</code>
+- Authentication: username and password</p>
 
 <p><img src="../images/blescanner12.png" alt="config" title="" /></p>
 
-<h4>Common MQTT parameters</h4>
+<h4>Common MQTT Parameters</h4>
 
 <ul>
-<li>Discovery topic: Home Assistant compatible topic. Default: <code>homeassistant</code></li>
-<li>Devices root topics: topics monitored by the plugin (at least one required). Sub-topics are not allowed.</li>
+<li>Discovery topic: Home Assistant compatible auto-discovery topic. Default: <code>homeassistant</code></li>
+<li>Equipment root topics: <code>root_topics</code> monitored by the plugin (at least one). Sub-topics are not accepted.</li>
 </ul>
 
 <h4>Devices and Antennas</h4>
 
 <ul>
-<li>Auto creation: automatically create BLE devices (disabled by default)</li>
-<li>Auto-discovery duration: detection delay for antennas and devices (in minutes)</li>
-<li>Missing timeout: time after which inactive devices will be deleted (in minutes, 0 to keep them indefinitely)</li>
+<li>TGW plugin compatibility: enable this if your antennas are managed by the <code>plugin-tgw</code>. In this case, the root topic is automatically filled in.</li>
+<li>Automatic creation: automatically create BLE devices (disabled by default)</li>
+<li>Auto-discovery duration: detection duration for antennas and devices (in minutes)</li>
+<li>Missing timeout: delay after which inactive devices will be removed (in minutes, 0 to keep them indefinitely)</li>
 </ul>
 
 <h4>System</h4>
 
 <ul>
-<li>Deamon port: default <code>55036</code>, do not change until you have a conflict</li>
+<li>Daemon port: default <code>55036</code>, do not change unless there is a conflict</li>
 </ul>
-
-<p><img src="../images/blescanner1.png" alt="config" title="" /></p>
 
 <h3>Auto-Discovery</h3>
 
-<p>Auto-discovery is active on startup, and detected antennas are added automatically. You can also stop or restart it using the <code>Auto-discovery</code> button. <br />
-If auto-creation is checked in the configuration page, devices will be automatically added at the end of synchronization.</p>
+<p>Auto-discovery is active on startup, and detected antennas are automatically added. You can also stop or restart it using the <code>Auto-discovery</code> button.
+<br>If automatic creation has been checked on the configuration page, devices will be automatically added at the end of synchronization.</p>
 
 <p><img src="../images/blescanner2.png" alt="disco" title="" /></p>
 
 <h3>Unknown Devices List</h3>
 
-<p>Displays all unmanaged devices. The <code>Discoverable</code> column indicates whether the devices support auto-discovery. The <code>display absent devices</code> option allows to see auto-detected devices that are not reachable. You can also filter table rows by clicking on column headers. <br />
-The <code>Add</code> button allows adding discovered devices one by one. If the device supports auto-discovery, its commands will be automatically created; otherwise only presence and RSSI will be available.</p>
+<p>Displays all unmanaged devices. The <code>Discoverable</code> column indicates whether devices support auto-discovery or not. The <code>display absent devices</code> option allows you to see auto-discovered devices that are not reachable. It is possible to filter table rows by clicking on column headers.</p>
+
+<p><br>The <code>Add</code> button allows you to add discovered devices one by one. If the device is auto-discoverable, its commands will be automatically created; otherwise, only presence and RSSI will be available.</p>
 
 <p><img src="../images/blescanner5.png" alt="list2" title="" /></p>
 
 <h3>Unknown Devices Network</h3>
 
-<p>Contextual display can be shown by signal attenuation or by distance (if supported by the antenna). <br />
-It is activated by selecting a node. The animation can be paused and the graph can be zoomed.</p>
+<p>The contextual display can be shown by attenuation or by distance (if supported by the antenna).
+<br>It is activated by selecting a node. The animation can be paused and the graph is zoomable.</p>
 
 <p><img src="../images/blescanner6.png" alt="#network1" title="" /></p>
 
 <h3>Known Devices List</h3>
 
-<p>Displays already added devices. Missing devices can also be displayed, and you can filter table rows by clicking on column headers.</p>
+<p>Displays already added devices. It is possible to display absent devices and filter table rows by clicking on column headers.</p>
 
 <p><img src="../images/blescanner3.png" alt="list1" title="" /></p>
 
 <h3>Known Devices Network</h3>
 
-<p>Contextual display can be shown by attenuation or distance (if supported by the antenna). It is activated by selecting a node. The animation can be paused. Missing devices can also be filtered.</p>
+<p>The contextual display can be shown by attenuation or by distance (if supported by the antenna).
+It is activated by selecting a node.
+<br>The animation can be paused. It is also possible to filter absent devices.</p>
 
 <p><img src="../images/blescanner4.png" alt="#network1" title="" /></p>
 
 <h3>Devices and Antennas</h3>
 
-<p>Available commands depend on the type of device or antenna. <br />
-A custom image can be added by device category.</p>
+<p>Available commands depend on the type of device or antenna.
+<br> A custom image can be added by equipment category.</p>
 
-<p>Theengs antennas only support presence detection. ESP32 antennas provide several commands (see <code>Bluetooth</code> and <code>System</code> tabs). <br />
-The <code>Web Console</code> button provides access to the ESP32 admin interface. <br />
-For more info, see the <a href="https://docs.openmqttgateway.com/use/gateway.html#system-commands-esp-only">ESP32 commands reference</a></p>
+<p>Theengs antennas have no commands except presence.
+<br>ESP32 antennas have several additional commands, see the <code>Bluetooth</code> and <code>System</code> tabs.
+<br>The <code>Web Console</code> button provides access to the ESP32 administration interface.
+<br>For more information, see the <a href="https://docs.openmqttgateway.com/use/gateway.html#system-commands-esp-only">ESP32 Theengs commands documentation</a>.</p>
 
-<p><img src="../images/blescanner7.png" alt="Equipments" title="" /> <br />
-<img src="../images/blescanner8.png" alt="Equipments" title="" /></p>
+<p><img src="../images/blescanner7.png" alt="Equipments" title="" /></p>
+
+<p><img src="../images/blescanner8.png" alt="Equipments" title="" /></p>
 
 <h4>Custom Commands</h4>
 
-<p>The <code>Custom</code> tab allows adding custom commands found in advertising data but not in auto-discovery (depending on the device). Example: temperature in Fahrenheit (<code>tempf</code>) for a reprogrammed Xiaomi <code>lywsd03mmc</code>.</p>
+<p>The <code>Custom</code> tab allows you to add custom commands that may be present in advertising data but not in auto-discovery (depending on the device). For example, here the temperature in Fahrenheit (<code>tempf</code>) for a reprogrammed Xiaomi <code>lywsd03mmc</code>:</p>
 
 <p><img src="../images/blescanner11.png" alt="Configuration" title="" /></p>
 
-<p>Similarly for missing <code>ESP32</code> commands like enabling/disabling external decoding or message count:</p>
+<p>Similarly for missing <code>ESP32</code> commands such as enabling/disabling external decoding or the number of messages received:</p>
 
 <p><img src="../images/blescanner10.png" alt="Configuration" title="" /></p>
 
-<p>For actions, the <code>payload</code> field must be in the format <code>"key1":value1 , "key2":value2...</code> <br />
-Both advertising and auto-discovered data are available in the <code>Other Data</code> column of the <a href="#liste-des-devices-inconnus">Unknown Devices List</a> page.</p>
+<p>For actions, the <code>payload</code> field must be in the format <code>"key1":value1 , "key2":value2...</code>
+<br>Advertising data and auto-discovered data are available in the <code>Other Data</code> column of the <a href="#unknown-devices-list">Unknown Devices List</a> page</p>
 
 <h3>Antennas Health</h3>
 
@@ -146,16 +160,17 @@ Both advertising and auto-discovered data are available in the <code>Other Data<
 <h3>FAQ</h3>
 
 <ul>
-<li>Antennas are not detected or some devices are not shown as discoverable: <br />
-Restart auto-discovery on your antennas (<code>BT: Force scan</code> or reboot the ESP32 or Theengs antenna)</li>
-<li>ESP32 commands are not created: <br />
-Enable the <code>SYS: Auto discovery</code> parameter</li>
-<li>Advertising data not shown (ESP32): <br />
-Enable <code>BT: Publish Advertisement data</code> parameter</li>
-<li>Distances not shown: <br />
-Only ESP32 reports this info starting from firmware v1.8 (experimental feature). Enable <code>BT: Publish HASS presence</code> for this.</li>
+<li>Antennas are not detected or some devices do not appear as discoverable:
+<br>Check your root topics
+<br>Restart auto-discovery on your antennas (<code>BT: Force scan</code> or reboot the ESP32 or Theengs antenna)</li>
+<li>ESP32 commands are not created
+<br>Enable the <code>SYS: Auto discovery</code> parameter</li>
+<li>Advertising data is not displayed (ESP32)
+<br> Enable the <code>BT: Publish Advertisement data</code> parameter</li>
+<li>Distances are not displayed
+<br>Only ESP32s report this information starting from firmware v1.8 (experimental feature). To enable this, activate the <code>BT: Publish HASS presence</code> parameter</li>
 </ul>
 
 <h3>Bugs and Troubleshooting</h3>
 
-<p>See the <a href="https://community.jeedom.com/tag/plugin-blescanner">Jeedom community forum</a></p>
+<p>See the <a href="https://community.jeedom.com/tag/plugin-blescanner">Jeedom community</a> forum</p>
