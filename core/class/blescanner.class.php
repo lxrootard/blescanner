@@ -810,44 +810,46 @@ class blescanner extends eqLogic {
   }
 
   public function updateBtConfig($topic, $msg) {
-    // log::add(__CLASS__, 'debug', '[' . __FUNCTION__ . '] msg= ' . json_encode($msg));
+    log::add(__CLASS__, 'debug', '[' . __FUNCTION__ . '] msg= ' . json_encode($msg));
     $this->updateDevices($msg);
     $this->updateAntennaConfig($topic, $msg);
   }
 
-  public static function updateLWT ($key, $alive) {
-    log::add(__CLASS__, 'debug', '[' . __FUNCTION__ . '] key= ' . $key);
+  public static function updateLWT ($rootTopic, $key, $alive) {
     $eqLogic = self::byLogicalId($key, __CLASS__);
-    //  plugin-tgw
     if (!is_object($eqLogic))
-	$eqLogic = self::searchAntennas($key);
+	$eqLogic = self::searchAntenna($key);
 
     if (is_object($eqLogic)) {
-	log::add(__CLASS__, 'debug', '[' . __FUNCTION__ . '] antenna: ' . $key . ' LWT: ' . $alive);
+	log::add(__CLASS__, 'debug', '[' . __FUNCTION__ . '] root topic: '. $rootTopic . ' antenna: ' . $key . ' LWT=' . $alive);
 	$cmdUid = $eqLogic->getConfiguration('antennaUid') . '-connectivity';
+	$cmd = $eqLogic->getCmd('info',$cmdUid);
+	if (is_object($cmd) && ($cmd->getConfiguration('topic')=='')) {
+		$topic = $rootTopic.'/'.$key.'/LWT';
+		$cmd->setConfiguration('topic',$topic);
+		$cmd->save();
+	}
 	$eqLogic->checkAndUpdateCmd($cmdUid, trim($alive));
     }
   }
 
-  public static function searchAntennas($key) {
-     log::add(__CLASS__, 'debug', '[' . __FUNCTION__ . '] key= ' . $key);
+  public static function searchAntenna($key) {
+     // log::add(__CLASS__, 'debug', '[' . __FUNCTION__ . '] key: ' . $key);
      $eqLogics = self::getDevices ('Antenna');
      foreach ($eqLogics as $eqLogic) {
-	log::add(__CLASS__, 'debug', '[' . __FUNCTION__ . '] uid=' . $eqLogic->getUid() . ' key=' . $key);
-	if (strpos($eqLogic->getUid(), $key)!== false)
-	   // $eqLogic->setConfiguration('antennaLWT', $key);
-	   return $eqLogic;
+	if (strpos($eqLogic->getUid(), strval($key))!== false)
+		return $eqLogic;
      }
      return null;
   }
 
   public static function handleTopic($rootTopic, $msg) {
-    log::add(__CLASS__, 'debug', '[' . __FUNCTION__ . '] topic: ' . $rootTopic . ' msg=' . json_encode($msg));
+    //log::add(__CLASS__, 'debug', '[' . __FUNCTION__ . '] topic: ' . $rootTopic . ' msg=' . json_encode($msg));
     $disco=cache::byKey('blescanner::disco')->getValue();
     foreach ($msg as $key => $value) {
 	$alive = $value["LWT"];
 	if (isset($alive))
-		self::updateLWT($key,$alive);
+		self::updateLWT($rootTopic,$key,$alive);
 
 	$val = $value["BTtoMQTT"];
 	$eqLogic = self::byLogicalId($key, __CLASS__);
@@ -885,7 +887,7 @@ class blescanner extends eqLogic {
    	$aLogic->save();
 	$topic = $topic.'/'.$key.'/LWT';
 	$uid = 'connectivity';
-	$lwt = $aLogic->newCmd($key.'-'.$uid, 'Connectivity', $topic, $uid, 'binary',$uid);
+	$lwt = $aLogic->newCmd($key.'-'.$uid, 'Connectivity', null, $uid, 'binary',$uid);
 	$lwt->setConfiguration('calculValueOffset', "#value#  == 'online'");
 	$lwt->save();
 	$aLogic->checkAndUpdateCmd($key.'-'.$uid, 'online');

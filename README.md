@@ -10,6 +10,8 @@
 - User Documentation [(fr)](docs/fr_FR/index.md)
 
 ## ChangeLog
+* v1.0 [lxrootard](https://github.com/lxrootard)
+<br> - debian11/php7 LWT bug fix
 * v0.9 [lxrootard](https://github.com/lxrootard)
 <br> - added compatibility for tgw plugin
 * v0.8 [lxrootard](https://github.com/lxrootard)

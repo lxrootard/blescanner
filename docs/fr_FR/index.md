@@ -32,6 +32,8 @@ Il suffit de cocher la case correspondante, cf [Configuration](#configuration) p
 
 #### ESP32 et antennes installées manuellement
 
+Pour installer manuellement les antennes Theengs voir [ce tuto](https://community.jeedom.com/t/tuto-installer-theengs-gateway-sur-debian-12/113404)
+
 Les antennes doivent publier leurs infos sur un ou plusieurs topics racines qui regroupent chacun une ou plusieurs antennes. 
 <br>Le topic d'auto-découverte est optionnel, s'il n'est pas fourni seule la présence sera disponible sur les équipements. <br>
 La structure doit respecter le schéma suivant:

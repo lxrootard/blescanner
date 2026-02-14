@@ -32,6 +32,8 @@ Simply check the corresponding box, see [Configuration](#configuration) below.
 
 #### ESP32 and Manually Installed Antennas
 
+To install Theengs antennas manually see [here](https://community.jeedom.com/t/tuto-installer-theengs-gateway-sur-debian-12/113404)
+
 Antennas must publish their information to one or more root topics, each grouping one or more antennas.  
 <br>The auto-discovery topic is optional; if not provided, only presence will be available on the equipment. <br>
 The structure must follow this schema:
