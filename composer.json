@@ -1,0 +1,16 @@
+{
+    "name": "lxrootard/blescanner",
+    "description": "blescanner jeedom plugin",
+    "license": "GPL",
+    "authors": [
+        {
+            "name": "lxrootard"
+        }
+    ],
+    "require": {
+	"lxrootard/jeedom-tools" : "~0.1"
+    },
+    "config": {
+        "vendor-dir": "vendor/"
+    }
+}

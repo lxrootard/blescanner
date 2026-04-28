@@ -10,6 +10,8 @@
 - User Documentation [(fr)](docs/fr_FR/index.md)
 
 ## ChangeLog
+* v1.1 [lxrootard](https://github.com/lxrootard)
+<br> - code modularization
 * v1.0 [lxrootard](https://github.com/lxrootard)
 <br> - debian11/php7 LWT bug fix
 * v0.9 [lxrootard](https://github.com/lxrootard)

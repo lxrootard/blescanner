@@ -1,18 +1,11 @@
 {
-  "pre-install": {
-  },
   "apt": {
     "nodejs" : {}
-  },
-  "pip3": {
   },
   "npm": {
     "plugins/blescanner/resources/blescannerd"  : {}
   },
-  "yarn": {
-  },
-  "plugin": {
-  },
-  "post-install": {
+  "composer": {
+    "plugins/blescanner"  : {}
   }
 }

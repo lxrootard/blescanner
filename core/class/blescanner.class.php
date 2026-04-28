@@ -16,8 +16,7 @@
 */
 
 require_once __DIR__  . '/../../../../core/php/core.inc.php';
-if (!class_exists('jeedomtools\MQTTClient'))
-	require_once __DIR__ . '/MQTTClient.php';
+require_once __DIR__ . '/../../vendor/autoload.php';
 
 use jeedomtools\MQTTClient as ble_MQTTClient;
 
