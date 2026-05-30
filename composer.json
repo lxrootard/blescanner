@@ -8,7 +8,7 @@
         }
     ],
     "require": {
-	"lxrootard/jeedom-tools" : "~0.1"
+	"lxrootard/jeedom-tools" : "~0.2"
     },
     "config": {
         "vendor-dir": "vendor/"

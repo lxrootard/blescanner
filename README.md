@@ -10,6 +10,8 @@
 - User Documentation [(fr)](docs/fr_FR/index.md)
 
 ## ChangeLog
+* v1.2 [lxrootard](https://github.com/lxrootard)
+<br> - dependencies fix
 * v1.1 [lxrootard](https://github.com/lxrootard)
 <br> - code modularization
 * v1.0 [lxrootard](https://github.com/lxrootard)
