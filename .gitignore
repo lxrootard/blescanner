@@ -1,12 +1,15 @@
 nbproject/
 test.php
+vendor/
 core/config/common.config.php
+resources/blescannerd/node_modules/
 plugins
 sftp-config.json
 .project
 .DS_Store
 Thumbs.db
 *.php~
+package-lock.json
 data/images/tmp
 docs/_site/
 docs/Gemfile.lock

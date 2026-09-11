@@ -1,0 +1,55 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "a655696f7c14a32e639e4a74b7557752",
+    "packages": [
+        {
+            "name": "lxrootard/jeedom-tools",
+            "version": "v0.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/lxrootard/jeedomtools.git",
+                "reference": "fb3353f4f8cc9734f714ce4c5c36b77a47d014d2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/lxrootard/jeedomtools/zipball/fb3353f4f8cc9734f714ce4c5c36b77a47d014d2",
+                "reference": "fb3353f4f8cc9734f714ce4c5c36b77a47d014d2",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "jeedomtools\\MQTTClient": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "lxrootard"
+                }
+            ],
+            "description": "Jeedom tools",
+            "support": {
+                "issues": "https://github.com/lxrootard/jeedomtools/issues",
+                "source": "https://github.com/lxrootard/jeedomtools/tree/v0.4"
+            },
+            "time": "2026-09-05T16:18:09+00:00"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {},
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {},
+    "platform-dev": {},
+    "plugin-api-version": "2.9.0"
+}

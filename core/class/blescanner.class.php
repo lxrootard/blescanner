@@ -54,12 +54,12 @@ class blescanner extends eqLogic {
     if (empty(config::byKey('mqttMode',__CLASS__)))
         config::save('mqttMode','local',__CLASS__);
 
-    $mqttSettings = config::byKey('broker',__CLASS__,array());
+    $mqttSettings = config::byKey('mqtt',__CLASS__,array());
     if (empty($mqttSettings)) {
 	$mqttSettings['port'] = '1883';
 	$mqttSettings['host'] = 'localhost';
 	$mqttSettings['socket_port'] = '55036';
-	config::save('broker',json_encode($mqttSettings), __CLASS__);
+	config::save('mqtt',json_encode($mqttSettings), __CLASS__);
     }
   }
 
@@ -137,6 +137,9 @@ class blescanner extends eqLogic {
 
   public static function cleanUnknown($timeout) {
     $devs = cache::byKey('blescanner::unknown_devices')->getValue();
+    if (!is_array($devs))
+	$devs = array();
+
     $antennas = self::getDevices('Antenna');
     foreach ($devs as $key => $dev) {
 	$lastUpd = $dev['lastUpdate'];
@@ -188,7 +191,7 @@ class blescanner extends eqLogic {
 	throw new Exception("Le délai d'absence doit être un nombre entier de minutes");
     if (config::byKey('ble_root_topics', __CLASS__) == null)
 	throw new Exception("Ajoutez au moins un topic à surveiller");
-    $mqttSettings = config::byKey('broker',__CLASS__);
+    $mqttSettings = config::byKey('mqtt',__CLASS__);
     //log::add(__CLASS__, 'debug', 'MQTT settings:' . json_encode($mqttSettings));
     if ($mqttSettings['host'] == '')
 	throw new Exception("L'adresse du broker MQTT doit être renseignée");
@@ -299,7 +302,10 @@ class blescanner extends eqLogic {
     $antenna = $this->getLogicalId();
     log::add(__CLASS__, 'debug', '['. __FUNCTION__ .'] antenna: ' . $this->getName() . ' device: ' . $did);
     $unknownDevices = cache::byKey('blescanner::unknown_devices')->getValue();
-    $dev = $unknownDevices[$did];
+    if (!is_array($unknownDevices))
+	$unknownDevices = array();
+
+    $dev = isset($unknownDevices[$did]) ? $unknownDevices[$did] : array();
     if (! isset($dev))
 	$dev = array();
     $dev['present'] = true;
@@ -384,6 +390,9 @@ class blescanner extends eqLogic {
     if (! is_object($eqLogic)) {
 	log::add(__CLASS__, 'debug', '[' . __FUNCTION__ . '] id=' . $id);
 	$devices = cache::byKey('blescanner::unknown_devices')->getValue();
+	if (!is_array($devices))
+	   $devices = array();
+
 	$dev = $devices[$id];
 	if (is_array($dev)) {
 		$eqLogic = self::createDevice($id, $dev);
@@ -553,6 +562,9 @@ class blescanner extends eqLogic {
 			if (is_object($dLogic))
 				return;
 			$unknownDevices = cache::byKey('blescanner::unknown_devices')->getValue();
+			if (!is_array($unknownDevices))
+				$unknownDevices = array();
+
 			$device = $unknownDevices[$did];
 			if (! is_array($device)) {
 				log::add(__CLASS__, 'debug', '[' . __FUNCTION__ . '] nouveau device découvrable inconnu: '. $did . ' name: '. $dev['name']);
@@ -931,12 +943,12 @@ class blescanner extends eqLogic {
     if (class_exists('mqtt2')) {
 	$mqtt2Infos = mqtt2::getFormatedInfos();
 	// log::add(__CLASS__, 'debug', '['.__FUNCTION__ . '] config' . json_encode($mqtt2Infos));
-	$mqttSettings = config::byKey('broker',__CLASS__,array());
+	$mqttSettings = config::byKey('mqtt',__CLASS__,array());
 	$mqttSettings['host'] = $mqtt2Infos['ip'];
 	$mqttSettings['port'] = $mqtt2Infos['port'];
 	$mqttSettings['user'] = $mqtt2Infos['user'];
 	$mqttSettings['passwd'] = $mqtt2Infos['password'];
-	config::save('broker',json_encode($mqttSettings), __CLASS__);
+	config::save('mqtt',json_encode($mqttSettings), __CLASS__);
 	if (mqtt2::deamon_info()['state'] != 'ok') {
 	     log::add(__CLASS__, 'debug', '['.__FUNCTION__ . '] Démarrage du démon MQTT2');
 	     mqtt2::deamon_start();
@@ -953,13 +965,17 @@ class blescanner extends eqLogic {
 
 	log::add(__CLASS__, 'info', '*** Starting blescanner deamon ***');
 	self::initSettings();
-	$mqttSettings = config::byKey('broker',__CLASS__);
+	$mqttSettings = config::byKey('mqtt',__CLASS__);
 	$mqttSettings['cbclass'] = 'jeeblescanner';
-	config::save('broker', json_encode($mqttSettings), __CLASS__);
+	config::save('mqtt', json_encode($mqttSettings), __CLASS__);
 	log::add(__CLASS__, 'debug', '[' . __FUNCTION__ . '] settings MQTT: ' . json_encode($mqttSettings));
 	$deamon = self::getDeamon();
 	$deamon->start ($mqttSettings);
-	sleep(3);
+	$i = 0;
+	while (($i < 10) && (! $deamon->isRunning())) {
+	   sleep(1);
+	   $i++;
+	}
 	if (! ($deamon->isRunning()))
 	    throw new Exception('Démon MQTT non démarré ou mauvais paramétrage, vérifier les logs');
 	$i = 0;
