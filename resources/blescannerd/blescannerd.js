@@ -30,7 +30,7 @@ Jeedom.log.info('MQTT : ' + args.mqtt_server)
 Jeedom.log.info('Username : ' + args.username)
 Jeedom.log.info('Password : ' + (args.password ? '***' : '(empty)'))
 Jeedom.log.info('PID file : ' + args.pid)
-Jeedom.log.info('Apikey : ' + args.apikey)
+Jeedom.log.info('Apikey : ' + (args.apikey ? '***' : '(empty)'))
 Jeedom.log.info('Callback : ' + args.callback)
 Jeedom.log.info('Cycle : ' + args.cycle)
 /*

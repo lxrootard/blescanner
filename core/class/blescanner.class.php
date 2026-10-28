@@ -23,6 +23,7 @@ use jeedomtools\MQTTClient as ble_MQTTClient;
 class blescanner extends eqLogic {
 
   private static $_deamon;
+  public static $_encryptConfigKey = array('mqtt');
 
   public static function getDeamon() {
     if (is_null(self::$_deamon)) {
@@ -968,7 +969,8 @@ class blescanner extends eqLogic {
 	$mqttSettings = config::byKey('mqtt',__CLASS__);
 	$mqttSettings['cbclass'] = 'jeeblescanner';
 	config::save('mqtt', json_encode($mqttSettings), __CLASS__);
-	log::add(__CLASS__, 'debug', '[' . __FUNCTION__ . '] settings MQTT: ' . json_encode($mqttSettings));
+	log::add(__CLASS__, 'debug', '[' . __FUNCTION__ . '] settings MQTT: ' .
+		str_replace($mqttSettings['passwd'], '***', json_encode($mqttSettings)));
 	$deamon = self::getDeamon();
 	$deamon->start ($mqttSettings);
 	$i = 0;

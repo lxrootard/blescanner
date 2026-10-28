@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a655696f7c14a32e639e4a74b7557752",
+    "content-hash": "d267985b4ef15b386be0d849bed09733",
     "packages": [
         {
             "name": "lxrootard/jeedom-tools",
-            "version": "v0.4",
+            "version": "v0.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lxrootard/jeedomtools.git",
-                "reference": "fb3353f4f8cc9734f714ce4c5c36b77a47d014d2"
+                "reference": "089d1c727cb2261b9f508603151191d60ef9a548"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lxrootard/jeedomtools/zipball/fb3353f4f8cc9734f714ce4c5c36b77a47d014d2",
-                "reference": "fb3353f4f8cc9734f714ce4c5c36b77a47d014d2",
+                "url": "https://api.github.com/repos/lxrootard/jeedomtools/zipball/089d1c727cb2261b9f508603151191d60ef9a548",
+                "reference": "089d1c727cb2261b9f508603151191d60ef9a548",
                 "shasum": ""
             },
             "type": "library",
@@ -38,9 +38,9 @@
             "description": "Jeedom tools",
             "support": {
                 "issues": "https://github.com/lxrootard/jeedomtools/issues",
-                "source": "https://github.com/lxrootard/jeedomtools/tree/v0.4"
+                "source": "https://github.com/lxrootard/jeedomtools/tree/v0.5"
             },
-            "time": "2026-09-05T16:18:09+00:00"
+            "time": "2026-10-28T15:57:35+00:00"
         }
     ],
     "packages-dev": [],

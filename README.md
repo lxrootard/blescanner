@@ -10,6 +10,8 @@
 - User Documentation [(fr)](docs/fr_FR/index.md)
 
 ## ChangeLog
+* v1.4 [lxrootard](https://github.com/lxrootard)
+<br> - security fix: encrypted MQTT password, anonymized logs
 * v1.3 [lxrootard](https://github.com/lxrootard)
 <br> - deamon reliability improvements
 * v1.2 [lxrootard](https://github.com/lxrootard)
